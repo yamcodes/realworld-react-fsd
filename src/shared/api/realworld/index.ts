@@ -1,3 +1,4 @@
+import { createEffect } from 'effector';
 import { Api, ContentType } from './Api';
 import type {
   LoginUserDto,
@@ -30,7 +31,12 @@ const realworldApi = new Api<string>({
     token ? { headers: { Authorization: `Token ${token}` } } : {},
 });
 
-export { realworldApi };
+const setSecurityDataFx = createEffect<string | null, void>({
+  name: 'setSecurityDataFx',
+  handler: realworldApi.setSecurityData,
+});
+
+export { realworldApi, setSecurityDataFx };
 export type {
   LoginUserDto,
   NewUserDto,
