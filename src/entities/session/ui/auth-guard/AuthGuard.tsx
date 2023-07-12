@@ -1,16 +1,22 @@
 import { ReactNode } from 'react';
+import { useUnit } from 'effector-react';
 import { Navigate } from 'react-router-dom';
 import { PATH_PAGE } from '~shared/lib/react-router';
+import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
+import { $isAuthorized, $pending } from '../../model';
 
 type AuthGuardProps = {
-  isAuth: boolean;
   children: ReactNode;
 };
 
 export function AuthGuard(props: AuthGuardProps) {
-  const { isAuth, children } = props;
+  const { children } = props;
 
-  if (isAuth) return <Navigate to={PATH_PAGE.root} />;
+  const [isAuthorized, pending] = useUnit([$isAuthorized, $pending]);
+
+  if (pending) return <FullPageWrapper>local storage pending</FullPageWrapper>;
+
+  if (isAuthorized) return <Navigate to={PATH_PAGE.root} />;
 
   return <> {children} </>;
 }
