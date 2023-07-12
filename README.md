@@ -21,6 +21,8 @@
 [![Code style: prettier][prettier-domain]](https://github.com/prettier/prettier)
 [![license][license-domain]](https://github.com/sldk-yuri/realworld-react-fsd/blob/master/LICENSE)
 
+# This is a test branch, there is a lot of unfinished code. I'm going to migrate to effector (actually add one more branch with effector showcase), some features might (not) work (from time to times).
+
 # Features
 
 The example application is a social blogging site (i.e. a Medium.com clone) called "Conduit". It uses a custom API for all requests, including authentication.
