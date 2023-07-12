@@ -1,9 +1,8 @@
+import { useUnit } from 'effector-react';
 import { useParams } from 'react-router-dom';
-import { articleApi } from '~entities/article';
 import { sessionModel } from '~entities/session';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
-import { Spinner } from '~shared/ui/spinner';
 import {
   GuestArticleMeta,
   CurrentUserArticleMeta,
@@ -11,30 +10,35 @@ import {
 } from '~widgets/article-meta';
 import { CommentsList } from '~widgets/comments-list';
 import { NewCommentEditor } from '~widgets/new-comment-editor';
+import { $article, $error, $pending } from './model';
 
 export function ArticlePage() {
   const { slug } = useParams();
 
   const user = sessionModel.useCurrentUser();
 
-  const {
-    data: article,
-    isLoading,
-    isError,
-    error,
-  } = articleApi.useArticle(slug!, { secure: !!user });
+  const [article, pending, error] = useUnit([$article, $pending, $error]);
 
-  if (isLoading)
+  console.log('ArticlePage mounted');
+
+  if (pending)
     return (
       <FullPageWrapper>
-        <Spinner />
+        <div>loading...</div>
       </FullPageWrapper>
     );
 
-  if (isError)
+  if (error)
     return (
       <FullPageWrapper>
         <ErrorHandler error={error} />
+      </FullPageWrapper>
+    );
+
+  if (!article)
+    return (
+      <FullPageWrapper>
+        <div>no data...</div>
       </FullPageWrapper>
     );
 
