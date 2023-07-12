@@ -1,13 +1,31 @@
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { FormEventHandler } from 'react';
+import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
-import { object, string } from 'yup';
-import { sessionModel } from '~entities/session';
-import { useCreateUser } from '~features/session';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { ErrorHandler } from '~shared/ui/error-handler';
+import {
+  $error,
+  $newUser,
+  $pending,
+  $user,
+  emailChanged,
+  formSubmitted,
+  usernameChanged,
+  passwordChanged,
+} from './model';
 
 export function RegisterPage() {
-  const { mutate, isError, error } = useCreateUser();
+  const { username, email, password } = useUnit($newUser);
+  const [user, pending, error] = useUnit([$user, $pending, $error]);
+
+  console.log(`pending: ${pending}`);
+  console.log(`user: ${user}`);
+  console.log(`error: ${error}`);
+
+  const onFormSubmit: FormEventHandler = (e) => {
+    e.preventDefault();
+    formSubmitted();
+  };
 
   return (
     <div className="auth-page">
@@ -19,71 +37,43 @@ export function RegisterPage() {
               <Link to={PATH_PAGE.login}>Have an account?</Link>
             </p>
 
-            {isError && <ErrorHandler error={error} />}
+            {error && <ErrorHandler error={error} />}
 
-            <Formik
-              initialValues={{
-                username: '',
-                email: '',
-                password: '',
-              }}
-              validationSchema={object().shape({
-                username: string().min(5).required(),
-                email: string().email().required(),
-                password: string().min(5).required(),
-              })}
-              onSubmit={(values, { setSubmitting }) => {
-                mutate(values, {
-                  onSuccess: (response) => {
-                    sessionModel.addUser(response.data.user);
-                  },
-                  onSettled: () => {
-                    setSubmitting(false);
-                  },
-                });
-              }}
-            >
-              {({ isSubmitting }) => (
-                <Form>
-                  <fieldset disabled={isSubmitting}>
-                    <fieldset className="form-group">
-                      <Field
-                        name="username"
-                        className="form-control form-control-lg"
-                        type="text"
-                        placeholder="Your Name"
-                      />
-                      <ErrorMessage name="username" />
-                    </fieldset>
-                    <fieldset className="form-group">
-                      <Field
-                        name="email"
-                        className="form-control form-control-lg"
-                        type="text"
-                        placeholder="Email"
-                      />
-                      <ErrorMessage name="email" />
-                    </fieldset>
-                    <fieldset className="form-group">
-                      <Field
-                        name="password"
-                        className="form-control form-control-lg"
-                        type="password"
-                        placeholder="Password"
-                      />
-                      <ErrorMessage name="password" />
-                    </fieldset>
-                    <button
-                      className="btn btn-lg btn-primary pull-xs-right"
-                      type="submit"
-                      disabled={isSubmitting}
-                    >
-                      Sign up
-                    </button>
-                  </fieldset>
-                </Form>
-              )}
-            </Formik>
+            <form onSubmit={onFormSubmit}>
+              <fieldset className="form-group">
+                <input
+                  className="form-control form-control-lg"
+                  type="text"
+                  placeholder="Your Name"
+                  value={username}
+                  onChange={(e) => usernameChanged(e.target.value)}
+                />
+              </fieldset>
+              <fieldset className="form-group">
+                <input
+                  className="form-control form-control-lg"
+                  type="text"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => emailChanged(e.target.value)}
+                />
+              </fieldset>
+              <fieldset className="form-group">
+                <input
+                  className="form-control form-control-lg"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => passwordChanged(e.target.value)}
+                />
+              </fieldset>
+              <button
+                type="submit"
+                className="btn btn-lg btn-primary pull-xs-right"
+              >
+                Sign up
+              </button>
+            </form>
           </div>
         </div>
       </div>
