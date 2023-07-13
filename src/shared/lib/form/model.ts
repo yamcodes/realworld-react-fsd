@@ -1,61 +1,78 @@
+/* eslint-disable no-promise-executor-return */
 import {
   createEffect,
   createEvent,
   createStore,
   Event,
   sample,
-  Store,
 } from 'effector';
+import { every, not } from 'patronum';
 import { z, ZodError } from 'zod';
 
-type FieldFactoryParams = {
-  formSubmitted: Event<void>;
+type FieldFactoryParams<T> = {
+  initialValue: T;
+  validateOn: Array<Event<void>>;
   validationSchema: z.ZodSchema;
+  name: string;
 };
 
-type ReturnType = [
-  Store<string>,
-  Store<string[] | null>,
-  Store<boolean>,
-  Store<boolean>,
-  Event<string>,
-  Event<void>,
-];
+export function fieldFactory<T>(params: FieldFactoryParams<T>) {
+  const { initialValue, validateOn, validationSchema, name } = params;
 
-export function fieldFactory(params: FieldFactoryParams): ReturnType {
-  const { formSubmitted, validationSchema } = params;
-
-  const validateFx = createEffect<string, void, ZodError>({
-    name: 'validateFx',
-    handler: (value) => {
-      validationSchema.parse(value);
+  const validateFx = createEffect<T, void, ZodError>({
+    name: name.concat('.validateFx'),
+    handler: async (value) => {
+      await validationSchema.parseAsync(value).then(
+        (result) => new Promise((res) => setTimeout(res, 300, result)),
+        (reject) => new Promise((_, rej) => setTimeout(rej, 300, reject)),
+      );
     },
   });
 
-  const $field = createStore<string>('');
-  const $error = createStore<string[] | null>(null);
-  const $touch = createStore(false);
-  const $validate = createStore(false);
-
-  const fieldChanged = createEvent<string>();
-  const fieldTouched = createEvent();
-  // const fieldValidated = createEvent<boolean>();
-
-  $field.on(fieldChanged, (_, value) => value);
-  $touch.on(fieldTouched, () => true);
-
-  sample({
-    clock: [fieldTouched, formSubmitted],
-    source: $field,
-    target: [validateFx],
+  const $value = createStore<T>(initialValue, { name: name.concat('.value') });
+  const $errors = createStore<string[] | null>(null, {
+    name: name.concat('.errors'),
+  });
+  const $touched = createStore(false, { name: name.concat('.touched') });
+  const $validating = validateFx.pending;
+  const $valid = every({
+    stores: [not($errors.map(Boolean)), $touched],
+    predicate: true,
   });
 
-  $validate.on(validateFx.pending, () => true);
-  $validate.on(validateFx.finally, () => false);
+  const valueChanged = createEvent<T>(name.concat('.valueChanged'));
+  const fieldTouched = createEvent(name.concat('.fieldTouched'));
 
-  $error.on(validateFx.failData, (_, zodError) =>
+  $value.on(valueChanged, (_, value) => value);
+  $touched.on(fieldTouched, () => true);
+
+  sample({
+    clock: [fieldTouched, valueChanged],
+    source: $value,
+    filter: $touched,
+    target: validateFx,
+    name: name.concat('.sample.defaultValidation'),
+  });
+
+  sample({
+    clock: validateOn,
+    source: $value,
+    target: validateFx,
+    name: name.concat('.sample.validateOnValidation'),
+  });
+
+  $errors.on(validateFx.failData, (_, zodError) =>
     zodError.issues.map((issue) => issue.message),
   );
+  $errors.reset(validateFx.doneData);
 
-  return [$field, $error, $touch, $validate, fieldChanged, fieldTouched];
+  return {
+    $value,
+    $errors,
+    $touched,
+    $validating,
+    $valid,
+    changed: valueChanged,
+    touched: fieldTouched,
+  };
 }
