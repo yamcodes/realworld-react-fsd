@@ -1,19 +1,31 @@
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 import { debug } from 'patronum';
+import { z } from 'zod';
 import { effectorSessionApi } from '~entities/session';
 import { NewUserDto } from '~shared/api/realworld';
 import { requestFactory } from '~shared/api/request';
+// eslint-disable-next-line no-restricted-imports
+import { fieldFactory } from '~shared/lib/form/model';
 
-export const usernameChanged = createEvent<string>();
 export const emailChanged = createEvent<string>();
 export const passwordChanged = createEvent<string>();
 export const formSubmitted = createEvent();
 
-export const $username = createStore('');
+export const [
+  $username,
+  $usernameError,
+  $usernameTouch,
+  $usernameValidate,
+  usernameChanged,
+  usernameTouched,
+] = fieldFactory({
+  formSubmitted,
+  validationSchema: z.string().min(5),
+});
+
 export const $email = createStore('');
 export const $password = createStore('');
 
-$username.on(usernameChanged, (_, username) => username);
 $email.on(emailChanged, (_, email) => email);
 $password.on(passwordChanged, (_, password) => password);
 

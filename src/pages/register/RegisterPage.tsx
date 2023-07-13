@@ -12,10 +12,22 @@ import {
   formSubmitted,
   usernameChanged,
   passwordChanged,
+  $username,
+  $usernameError,
+  $usernameTouch,
+  $usernameValidate,
+  usernameTouched,
 } from './model';
 
 export function RegisterPage() {
-  const { username, email, password } = useUnit($newUser);
+  const { email, password } = useUnit($newUser);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [username, usernameError, usernameTouch, usernameValidate] = useUnit([
+    $username,
+    $usernameError,
+    $usernameTouch,
+    $usernameValidate,
+  ]);
   const [user, pending, error] = useUnit([$user, $pending, $error]);
 
   console.log(`pending: ${pending}`);
@@ -26,6 +38,8 @@ export function RegisterPage() {
     e.preventDefault();
     formSubmitted();
   };
+
+  console.log(usernameError);
 
   return (
     <div className="auth-page">
@@ -47,7 +61,9 @@ export function RegisterPage() {
                   placeholder="Your Name"
                   value={username}
                   onChange={(e) => usernameChanged(e.target.value)}
+                  onBlur={() => usernameTouched()}
                 />
+                {usernameError && <p>{usernameError.join(', ')}</p>}
               </fieldset>
               <fieldset className="form-group">
                 <input
