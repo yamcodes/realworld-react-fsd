@@ -85,13 +85,16 @@ module.exports = {
       extends: [
         'plugin:eslint-plugin-import/typescript',
         'eslint-config-airbnb-typescript',
+        'plugin:effector/recommended',
+        'plugin:effector/react',
+        'plugin:effector/scope',
       ],
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
         project: ['tsconfig.json'],
       },
-      plugins: ['@typescript-eslint/eslint-plugin'],
+      plugins: ['@typescript-eslint/eslint-plugin', 'effector'],
       rules: {
         '@typescript-eslint/indent': 'off',
         'import/no-extraneous-dependencies': [
