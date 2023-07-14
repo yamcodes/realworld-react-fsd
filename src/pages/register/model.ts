@@ -1,68 +1,55 @@
-import { attach, combine, createEvent, sample } from 'effector';
-import { every } from 'patronum';
+import { attach, createEvent, sample } from 'effector';
 import { z } from 'zod';
 import { effectorSessionApi } from '~entities/session';
-import { NewUserDto } from '~shared/api/realworld';
 import { requestFactory } from '~shared/api/request';
-// eslint-disable-next-line no-restricted-imports
-import { fieldFactory } from '~shared/lib/form/model';
+import { formFactory } from '~shared/lib/form';
+
+const requestUserFx = attach({ effect: effectorSessionApi.createUserFx });
 
 export const formSubmitted = createEvent();
 
-export const usernameField = fieldFactory({
-  initialValue: '',
+const {
+  $form: $newUser,
+  $valid,
+  $validating,
+  fields,
+} = formFactory({
+  fields: {
+    username: {
+      initialValue: '',
+      validationSchema: z.string().min(5),
+      name: 'username',
+    },
+    email: {
+      initialValue: '',
+      validationSchema: z.string().min(5),
+      name: 'email',
+    },
+    password: {
+      initialValue: '',
+      validationSchema: z.string().min(5),
+      name: 'password',
+    },
+  },
   validateOn: [formSubmitted],
-  validationSchema: z.string().min(5),
-  name: 'usernameField',
+  resetOn: [requestUserFx.done],
+  name: 'registerForm',
 });
 
-export const emailField = fieldFactory({
-  initialValue: '',
-  validateOn: [formSubmitted],
-  validationSchema: z.string().min(5),
-  name: 'emailField',
-});
+export const emailField = fields.email;
+export const passwordField = fields.password;
+export const usernameField = fields.username;
 
-export const passwordField = fieldFactory({
-  initialValue: '',
-  validateOn: [formSubmitted],
-  validationSchema: z.string().min(5),
-  name: 'passwordField',
-});
-
-const $newUser = combine<NewUserDto>({
-  username: usernameField.$value,
-  email: emailField.$value,
-  password: passwordField.$value,
-});
-
-export const $formValidating = every({
-  stores: [
-    usernameField.$validating,
-    emailField.$validating,
-    passwordField.$validating,
-  ],
-  predicate: true,
-});
-
-const $formValid = every({
-  stores: [usernameField.$valid, emailField.$valid, passwordField.$valid],
-  predicate: true,
-});
-
-const requestUserFx = attach({
-  effect: effectorSessionApi.createUserFx,
-  source: $newUser,
-  name: 'requestUserFx',
-});
+export const $formValidating = $validating;
 
 sample({
   clock: formSubmitted,
-  filter: $formValid,
+  source: $newUser,
+  filter: $valid,
   target: requestUserFx,
 });
 
-export const [$user, $pending, $error] = requestFactory({
+export const { $pending, $error } = requestFactory({
   effect: requestUserFx,
   reset: [formSubmitted],
   name: 'requestUserFx',

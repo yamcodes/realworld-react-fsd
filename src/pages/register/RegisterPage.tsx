@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEventHandler } from 'react';
-import { useEvent, useStore, useUnit } from 'effector-react';
+import { useEvent, useStore } from 'effector-react';
 import { Link } from 'react-router-dom';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { ErrorHandler } from '~shared/ui/error-handler';
@@ -7,7 +7,6 @@ import {
   $error,
   $formValidating,
   $pending,
-  $user,
   emailField,
   formSubmitted,
   passwordField,
@@ -93,14 +92,14 @@ function PasswordField() {
 }
 
 export function RegisterPage() {
-  const [user, pending, error] = useUnit([$user, $pending, $error]);
+  const pending = useStore($pending);
+  const error = useStore($error);
   const formValidating = useStore($formValidating);
-
-  console.log(user);
+  const submitted = useEvent(formSubmitted);
 
   const onFormSubmit: FormEventHandler = (e) => {
     e.preventDefault();
-    formSubmitted();
+    submitted();
   };
 
   return (
