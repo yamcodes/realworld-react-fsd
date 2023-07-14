@@ -1,13 +1,78 @@
-import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { ChangeEvent, FormEventHandler } from 'react';
+import { useEvent, useStore } from 'effector-react';
 import { Link } from 'react-router-dom';
-import { object, string } from 'yup';
-import { sessionModel } from '~entities/session';
-import { useLoginUser } from '~features/session';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { ErrorHandler } from '~shared/ui/error-handler';
+import {
+  $error,
+  $formValidating,
+  $pending,
+  emailField,
+  formSubmitted,
+  passwordField,
+} from './model';
 
+function EmailField() {
+  const value = useStore(emailField.$value);
+  const errors = useStore(emailField.$errors);
+  const changed = useEvent(emailField.changed);
+  const touched = useEvent(emailField.touched);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
+    changed(e.target.value);
+
+  const handleBlur = () => touched();
+
+  return (
+    <fieldset className="form-group">
+      <input
+        className="form-control form-control-lg"
+        type="text"
+        placeholder="Email"
+        value={value}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+      {errors && <p>{errors.join(', ')}</p>}
+    </fieldset>
+  );
+}
+
+function PasswordField() {
+  const value = useStore(passwordField.$value);
+  const errors = useStore(passwordField.$errors);
+  const changed = useEvent(passwordField.changed);
+  const touched = useEvent(passwordField.touched);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
+    changed(e.target.value);
+
+  const handleBlur = () => touched();
+
+  return (
+    <fieldset className="form-group">
+      <input
+        className="form-control form-control-lg"
+        type="password"
+        placeholder="Password"
+        value={value}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+      {errors && <p>{errors.join(', ')}</p>}
+    </fieldset>
+  );
+}
 export function LoginPage() {
-  const { mutate, isError, error } = useLoginUser();
+  const pending = useStore($pending);
+  const error = useStore($error);
+  const formValidating = useStore($formValidating);
+  const submitted = useEvent(formSubmitted);
+
+  const onFormSubmit: FormEventHandler = (e) => {
+    e.preventDefault();
+    submitted();
+  };
 
   return (
     <div className="auth-page">
@@ -19,58 +84,20 @@ export function LoginPage() {
               <Link to={PATH_PAGE.register}>Need an account?</Link>
             </p>
 
-            {isError && <ErrorHandler error={error!} />}
+            {error && <ErrorHandler error={error} />}
 
-            <Formik
-              initialValues={{
-                email: '',
-                password: '',
-              }}
-              validationSchema={object().shape({
-                email: string().email().required(),
-                password: string().min(5).required(),
-              })}
-              onSubmit={(values, { setSubmitting }) => {
-                mutate(values, {
-                  onSuccess: (response) => {
-                    sessionModel.addUser(response.data.user);
-                  },
-                  onSettled: () => {
-                    setSubmitting(false);
-                  },
-                });
-              }}
-            >
-              {({ isSubmitting }) => (
-                <Form>
-                  <fieldset className="form-group">
-                    <Field
-                      name="email"
-                      className="form-control form-control-lg"
-                      type="text"
-                      placeholder="Email"
-                    />
-                    <ErrorMessage name="email" />
-                  </fieldset>
-                  <fieldset className="form-group">
-                    <Field
-                      name="password"
-                      className="form-control form-control-lg"
-                      type="password"
-                      placeholder="Password"
-                    />
-                    <ErrorMessage name="password" />
-                  </fieldset>
-                  <button
-                    className="btn btn-lg btn-primary pull-xs-right"
-                    type="submit"
-                    disabled={isSubmitting}
-                  >
-                    Sign in
-                  </button>
-                </Form>
-              )}
-            </Formik>
+            <form onSubmit={onFormSubmit}>
+              <fieldset disabled={formValidating || pending}>
+                <EmailField />
+                <PasswordField />
+              </fieldset>
+              <button
+                className="btn btn-lg btn-primary pull-xs-right"
+                type="submit"
+              >
+                Sign in
+              </button>
+            </form>
           </div>
         </div>
       </div>
