@@ -6,30 +6,36 @@ import {
   Event,
   sample,
 } from 'effector';
-import { every, not } from 'patronum';
+import { every, not, reset } from 'patronum';
 import { z, ZodError } from 'zod';
 
-type FieldFactoryParams<T> = {
-  initialValue: T;
+export type FieldConfig<Value> = {
+  initialValue: Value;
   validateOn: Array<Event<void>>;
-  validationSchema: z.ZodSchema;
+  resetOn: Array<Event<void>>;
+  validationSchema: z.ZodSchema<Value>;
   name: string;
 };
 
-export function fieldFactory<T>(params: FieldFactoryParams<T>) {
-  const { initialValue, validateOn, validationSchema, name } = params;
+export type Field<Value> = ReturnType<typeof fieldFactory<Value>>;
 
-  const validateFx = createEffect<T, void, ZodError>({
+export function fieldFactory<Value>(config: FieldConfig<Value>) {
+  const { initialValue, validateOn, resetOn, validationSchema, name } = config;
+
+  const validateFx = createEffect<Value, void, ZodError>({
     name: name.concat('.validateFx'),
     handler: async (value) => {
-      await validationSchema.parseAsync(value).then(
-        (result) => new Promise((res) => setTimeout(res, 300, result)),
-        (reject) => new Promise((_, rej) => setTimeout(rej, 300, reject)),
-      );
+      await validationSchema.parseAsync(value);
+      // .then(
+      //   (result) => new Promise((res) => setTimeout(res, 2000, result)),
+      //   (reject) => new Promise((_, rej) => setTimeout(rej, 2000, reject)),
+      // );
     },
   });
 
-  const $value = createStore<T>(initialValue, { name: name.concat('.value') });
+  const $value = createStore<Value>(initialValue, {
+    name: name.concat('.value'),
+  });
   const $errors = createStore<string[] | null>(null, {
     name: name.concat('.errors'),
   });
@@ -40,7 +46,7 @@ export function fieldFactory<T>(params: FieldFactoryParams<T>) {
     predicate: true,
   });
 
-  const valueChanged = createEvent<T>(name.concat('.valueChanged'));
+  const valueChanged = createEvent<Value>(name.concat('.valueChanged'));
   const fieldTouched = createEvent(name.concat('.fieldTouched'));
 
   $value.on(valueChanged, (_, value) => value);
@@ -61,10 +67,17 @@ export function fieldFactory<T>(params: FieldFactoryParams<T>) {
     name: name.concat('.sample.validateOnValidation'),
   });
 
+  $touched.on(validateFx.pending, () => true);
+
   $errors.on(validateFx.failData, (_, zodError) =>
     zodError.issues.map((issue) => issue.message),
   );
   $errors.reset(validateFx.doneData);
+
+  reset({
+    clock: resetOn,
+    target: [$value, $errors, $touched],
+  });
 
   return {
     $value,
