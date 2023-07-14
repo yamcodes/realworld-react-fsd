@@ -1,6 +1,7 @@
 import { createEffect } from 'effector';
 import {
   GenericErrorModel,
+  LoginUserDto,
   NewUserDto,
   UserDto,
   realworldApi,
@@ -13,6 +14,18 @@ import {
 //     return response.data.user;
 //   },
 // });
+
+export const loginUserFx = createEffect<
+  LoginUserDto,
+  UserDto,
+  GenericErrorModel
+>({
+  name: 'loginUserFx',
+  handler: async (user) => {
+    const response = await realworldApi.users.login({ user });
+    return response.data.user;
+  },
+});
 
 export const createUserFx = createEffect<
   NewUserDto,
