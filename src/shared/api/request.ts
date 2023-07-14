@@ -28,5 +28,5 @@ export function requestFactory<Params, Done>(
   $pending.reset(reset);
   $error.reset(reset);
 
-  return [$data, $pending, $error];
+  return { $data, $pending, $error };
 }
