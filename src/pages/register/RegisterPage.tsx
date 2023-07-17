@@ -1,23 +1,27 @@
-import { ChangeEvent, FormEventHandler } from 'react';
-import { useEvent, useStore } from 'effector-react';
+import { ChangeEvent, FormEventHandler, useEffect } from 'react';
+import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import {
-  $error,
   $formValidating,
-  $pending,
+  response,
   emailField,
   formSubmitted,
+  pageUnmounted,
   passwordField,
   usernameField,
 } from './model';
 
 function UsernameField() {
-  const value = useStore(usernameField.$value);
-  const errors = useStore(usernameField.$errors);
-  const changed = useEvent(usernameField.changed);
-  const touched = useEvent(usernameField.touched);
+  const [value, errors] = useUnit([
+    usernameField.$value,
+    usernameField.$errors,
+  ]);
+  const [changed, touched] = useUnit([
+    usernameField.changed,
+    usernameField.touched,
+  ]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     changed(e.target.value);
@@ -40,10 +44,8 @@ function UsernameField() {
 }
 
 function EmailField() {
-  const value = useStore(emailField.$value);
-  const errors = useStore(emailField.$errors);
-  const changed = useEvent(emailField.changed);
-  const touched = useEvent(emailField.touched);
+  const [value, errors] = useUnit([emailField.$value, emailField.$errors]);
+  const [changed, touched] = useUnit([emailField.changed, emailField.touched]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     changed(e.target.value);
@@ -66,10 +68,14 @@ function EmailField() {
 }
 
 function PasswordField() {
-  const value = useStore(passwordField.$value);
-  const errors = useStore(passwordField.$errors);
-  const changed = useEvent(passwordField.changed);
-  const touched = useEvent(passwordField.touched);
+  const [value, errors] = useUnit([
+    passwordField.$value,
+    passwordField.$errors,
+  ]);
+  const [changed, touched] = useUnit([
+    passwordField.changed,
+    passwordField.touched,
+  ]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     changed(e.target.value);
@@ -92,15 +98,16 @@ function PasswordField() {
 }
 
 export function RegisterPage() {
-  const pending = useStore($pending);
-  const error = useStore($error);
-  const formValidating = useStore($formValidating);
-  const submitted = useEvent(formSubmitted);
+  const [pending, error] = useUnit([response.$pending, response.$error]);
+  const [validating] = useUnit([$formValidating]);
+  const [submitted, unmounted] = useUnit([formSubmitted, pageUnmounted]);
 
   const onFormSubmit: FormEventHandler = (e) => {
     e.preventDefault();
     submitted();
   };
+
+  useEffect(() => unmounted, [unmounted]);
 
   return (
     <div className="auth-page">
@@ -115,7 +122,7 @@ export function RegisterPage() {
             {error && <ErrorHandler error={error} />}
 
             <form onSubmit={onFormSubmit}>
-              <fieldset disabled={formValidating || pending}>
+              <fieldset disabled={validating || pending}>
                 <UsernameField />
                 <EmailField />
                 <PasswordField />
