@@ -1,12 +1,31 @@
 import { attach, createEvent, sample } from 'effector';
 import { z } from 'zod';
-import { effectorSessionApi } from '~entities/session';
+import { effectorSessionApi, effectorSessionModel } from '~entities/session';
+import { abortRequestFx } from '~shared/api/realworld';
 import { requestFactory } from '~shared/api/request';
 import { formFactory } from '~shared/lib/form';
+import { sessionModel } from '~shared/session';
 
+const abortFx = attach({ effect: abortRequestFx });
 const requestUserFx = attach({ effect: effectorSessionApi.createUserFx });
 
 export const formSubmitted = createEvent();
+export const pageUnmounted = createEvent();
+export const registerRouteOpened = createEvent();
+
+export const { sessionCheckStarted, sessionReceivedAuthenticated } =
+  sessionModel.chainAuthorized();
+
+sample({
+  clock: registerRouteOpened,
+  target: sessionCheckStarted,
+});
+
+// sample({
+//   clock: sessionReceivedAuthenticated,
+//   fn: () => '/',
+//   target: redirectFx,
+// });
 
 const {
   $form: $newUser,
@@ -32,7 +51,7 @@ const {
     },
   },
   validateOn: [formSubmitted],
-  resetOn: [requestUserFx.done],
+  resetOn: [requestUserFx.done, registerRouteOpened],
   name: 'registerForm',
 });
 
@@ -42,15 +61,30 @@ export const usernameField = fields.username;
 
 export const $formValidating = $validating;
 
+const cancelToken = 'requestUserFx';
+
 sample({
   clock: formSubmitted,
   source: $newUser,
   filter: $valid,
+  fn: (user) => ({ user, params: { cancelToken } }),
   target: requestUserFx,
 });
 
-export const { $pending, $error } = requestFactory({
+sample({
+  clock: pageUnmounted,
+  fn: () => cancelToken,
+  target: abortFx,
+});
+
+export const response = requestFactory({
   effect: requestUserFx,
-  reset: [formSubmitted],
+  reset: [formSubmitted, registerRouteOpened],
   name: 'requestUserFx',
+});
+
+sample({
+  clock: requestUserFx.doneData,
+  fn: (user) => user.token,
+  target: effectorSessionModel.sessionCreateFx,
 });
