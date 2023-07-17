@@ -36,7 +36,12 @@ const setSecurityDataFx = createEffect<string | null, void>({
   handler: realworldApi.setSecurityData,
 });
 
-export { realworldApi, setSecurityDataFx };
+const abortRequestFx = createEffect({
+  name: 'abortRequestFx',
+  handler: realworldApi.abortRequest,
+});
+
+export { realworldApi, setSecurityDataFx, abortRequestFx };
 export type {
   LoginUserDto,
   NewUserDto,
