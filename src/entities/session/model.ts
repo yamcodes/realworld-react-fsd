@@ -29,9 +29,12 @@ export const sessionDeleteFx = createEffect({
   },
 });
 
-export const sessionCreateFx = createEffect<string, string>(async (string) => {
-  localStorage.setItem(LocalStorageKey, JSON.stringify(string));
-  return string;
+export const sessionCreateFx = createEffect<string, string>({
+  name: 'sessionCreateFx',
+  handler: async (string) => {
+    localStorage.setItem(LocalStorageKey, JSON.stringify(string));
+    return string;
+  },
 });
 
 export const appInitialized = createEvent();

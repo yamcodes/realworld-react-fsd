@@ -3,6 +3,7 @@ import {
   GenericErrorModel,
   LoginUserDto,
   NewUserDto,
+  RequestParams,
   UserDto,
   realworldApi,
 } from '~shared/api/realworld';
@@ -28,13 +29,13 @@ export const loginUserFx = createEffect<
 });
 
 export const createUserFx = createEffect<
-  NewUserDto,
+  { user: NewUserDto; params?: RequestParams },
   UserDto,
   GenericErrorModel
 >({
   name: 'createUserFx',
-  handler: async (user) => {
-    const response = await realworldApi.users.createUser({ user });
+  handler: async ({ user, params = {} }) => {
+    const response = await realworldApi.users.createUser({ user }, params);
     return response.data.user;
   },
 });
