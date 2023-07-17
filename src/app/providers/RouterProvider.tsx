@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { allSettled, fork } from 'effector';
 import {
   Navigate,
   RouterProvider,
@@ -8,6 +9,8 @@ import { AuthGuard, GuestGuard } from '~entities/session';
 // eslint-disable-next-line no-restricted-imports
 import { articleRouteOpened } from '~pages/article/model';
 import { MainLayout } from '~pages/layouts';
+// eslint-disable-next-line no-restricted-imports
+import { sessionCheckStarted } from '~pages/register/model';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { Loadable } from '~shared/ui/loadable';
 
@@ -20,6 +23,9 @@ const ProfilePage = Loadable(lazy(() => import('~pages/profile')));
 const RegisterPage = Loadable(lazy(() => import('~pages/register')));
 const SettingsPage = Loadable(lazy(() => import('~pages/settings')));
 
+const scope = fork();
+
+// eslint-disable-next-line react-refresh/only-export-components
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -38,11 +44,11 @@ const router = createBrowserRouter([
       },
       {
         path: 'register',
-        element: (
-          <AuthGuard>
-            <RegisterPage />
-          </AuthGuard>
-        ),
+        element: <RegisterPage />,
+        loader: async (args) => {
+          await allSettled(sessionCheckStarted, { scope });
+          return args;
+        },
       },
       {
         path: 'settings',
@@ -96,9 +102,7 @@ const router = createBrowserRouter([
             element: <ArticlePage />,
             loader: (args) => {
               const { slug } = args.params;
-
               if (slug) articleRouteOpened({ slug });
-
               return args;
             },
           },
