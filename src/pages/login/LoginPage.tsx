@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEventHandler } from 'react';
-import { useEvent, useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { ErrorHandler } from '~shared/ui/error-handler';
@@ -13,10 +13,8 @@ import {
 } from './model';
 
 function EmailField() {
-  const value = useStore(emailField.$value);
-  const errors = useStore(emailField.$errors);
-  const changed = useEvent(emailField.changed);
-  const touched = useEvent(emailField.touched);
+  const [value, errors] = useUnit([emailField.$value, emailField.$errors]);
+  const [changed, touched] = useUnit([emailField.changed, emailField.touched]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     changed(e.target.value);
@@ -39,10 +37,14 @@ function EmailField() {
 }
 
 function PasswordField() {
-  const value = useStore(passwordField.$value);
-  const errors = useStore(passwordField.$errors);
-  const changed = useEvent(passwordField.changed);
-  const touched = useEvent(passwordField.touched);
+  const [value, errors] = useUnit([
+    passwordField.$value,
+    passwordField.$errors,
+  ]);
+  const [changed, touched] = useUnit([
+    passwordField.changed,
+    passwordField.touched,
+  ]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     changed(e.target.value);
@@ -64,10 +66,12 @@ function PasswordField() {
   );
 }
 export function LoginPage() {
-  const pending = useStore($pending);
-  const error = useStore($error);
-  const formValidating = useStore($formValidating);
-  const submitted = useEvent(formSubmitted);
+  const [pending, error, validating] = useUnit([
+    $pending,
+    $error,
+    $formValidating,
+  ]);
+  const submitted = useUnit(formSubmitted);
 
   const onFormSubmit: FormEventHandler = (e) => {
     e.preventDefault();
@@ -87,7 +91,7 @@ export function LoginPage() {
             {error && <ErrorHandler error={error} />}
 
             <form onSubmit={onFormSubmit}>
-              <fieldset disabled={formValidating || pending}>
+              <fieldset disabled={validating || pending}>
                 <EmailField />
                 <PasswordField />
               </fieldset>
