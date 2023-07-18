@@ -1,3 +1,1 @@
-import { ProfilePage } from './ProfilePage';
-
-export default ProfilePage;
+export { $$route as $$profileRoute } from './route';

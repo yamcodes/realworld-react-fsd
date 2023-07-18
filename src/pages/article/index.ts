@@ -1,3 +1,1 @@
-import { ArticlePage } from './ArticlePage';
-
-export default ArticlePage;
+export { $$route as $$articleRoute } from './route';

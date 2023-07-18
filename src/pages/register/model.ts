@@ -4,7 +4,7 @@ import { effectorSessionApi, effectorSessionModel } from '~entities/session';
 import { abortRequestFx } from '~shared/api/realworld';
 import { requestFactory } from '~shared/api/request';
 import { formFactory } from '~shared/lib/form';
-import { sessionModel } from '~shared/session';
+// import { sessionModel } from '~shared/session';
 
 const abortFx = attach({ effect: abortRequestFx });
 const requestUserFx = attach({ effect: effectorSessionApi.createUserFx });
@@ -12,20 +12,6 @@ const requestUserFx = attach({ effect: effectorSessionApi.createUserFx });
 export const formSubmitted = createEvent();
 export const pageUnmounted = createEvent();
 export const registerRouteOpened = createEvent();
-
-export const { sessionCheckStarted, sessionReceivedAuthenticated } =
-  sessionModel.chainAuthorized();
-
-sample({
-  clock: registerRouteOpened,
-  target: sessionCheckStarted,
-});
-
-// sample({
-//   clock: sessionReceivedAuthenticated,
-//   fn: () => '/',
-//   target: redirectFx,
-// });
 
 const {
   $form: $newUser,

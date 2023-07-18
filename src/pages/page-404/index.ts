@@ -1,3 +1,1 @@
-import { Page404 } from './Page404';
-
-export default Page404;
+export { $$route as $$page404Route } from './route';
