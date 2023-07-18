@@ -1,6 +1,6 @@
-import { createEvent, createStore, sample } from 'effector';
-import { UserDto, setSecurityDataFx } from '~shared/api/realworld';
-import { sessionLoadFx, userGetFx } from './api';
+import { createEffect, createStore, sample } from 'effector';
+import { setSecurityDataFx } from '~shared/api/realworld';
+import { sessionLoadFx } from './api';
 
 enum AuthStatus {
   Initial = 0,
@@ -9,70 +9,28 @@ enum AuthStatus {
   Authenticated,
 }
 
-export const $authStatus = createStore(AuthStatus.Initial, {
-  name: 'authStatus',
-});
-const $token = createStore<string | null>(null, { name: 'token' });
-export const $user = createStore<UserDto | null>(null, { name: 'user' });
+const $auth = createStore(AuthStatus.Initial, { name: 'auth' });
 
-$authStatus.on(sessionLoadFx, (status) => {
+$auth.on(sessionLoadFx, (status) => {
   if (status === AuthStatus.Initial) return AuthStatus.Pending;
   return status;
 });
 
-$authStatus.on(userGetFx.doneData, () => AuthStatus.Authenticated);
+$auth.on(sessionLoadFx.done, () => AuthStatus.Authenticated);
+$auth.on(sessionLoadFx.fail, () => AuthStatus.Anonymous);
 
-$authStatus.on(
-  [sessionLoadFx.fail, userGetFx.fail],
-  () => AuthStatus.Anonymous,
-);
+export const checkAuthFx = createEffect(async () => {
+  // eslint-disable-next-line effector/no-getState
+  const auth = $auth.getState();
 
-$token.on(sessionLoadFx.doneData, (_, token) => token);
-$user.on(userGetFx.doneData, (_, user) => user);
+  if (auth === AuthStatus.Authenticated) return auth;
+  if (auth === AuthStatus.Anonymous) return auth;
 
-export function chainAuthorized() {
-  const sessionCheckStarted = createEvent();
-  const sessionReceivedAuthenticated = createEvent();
-  const sessionReceivedAnonymous = createEvent();
+  const token = await sessionLoadFx();
+  return token ? AuthStatus.Authenticated : AuthStatus.Anonymous;
+});
 
-  const alreadyAuthenticated = sample({
-    clock: sessionCheckStarted,
-    source: $authStatus,
-    filter: (status) => status === AuthStatus.Authenticated,
-  });
-
-  const alreadyAnonymous = sample({
-    clock: sessionCheckStarted,
-    source: $authStatus,
-    filter: (status) => status === AuthStatus.Anonymous,
-  });
-
-  sample({
-    clock: sessionCheckStarted,
-    source: $authStatus,
-    filter: (status) => status === AuthStatus.Initial,
-    target: sessionLoadFx,
-  });
-
-  sample({
-    clock: [alreadyAuthenticated, sessionLoadFx.done],
-    source: $token,
-    target: [setSecurityDataFx, userGetFx],
-  });
-
-  sample({
-    clock: [userGetFx.done],
-    target: sessionReceivedAuthenticated,
-  });
-
-  sample({
-    clock: [alreadyAnonymous, sessionLoadFx.fail, userGetFx.fail],
-    target: sessionReceivedAnonymous,
-  });
-
-  return {
-    sessionCheckStarted,
-    sessionReceivedAuthenticated,
-    sessionReceivedAnonymous,
-  };
-}
+sample({
+  clock: sessionLoadFx.doneData,
+  target: setSecurityDataFx,
+});
