@@ -10,8 +10,12 @@ export default defineConfig({
   plugins: [
     react({
       babel: {
-        plugins: ['effector/babel-plugin'],
-        configFile: true,
+        plugins: [
+          [
+            'effector/babel-plugin',
+            { addLoc: true, debugSids: true, addNames: true },
+          ],
+        ],
       },
     }),
     eslint(),

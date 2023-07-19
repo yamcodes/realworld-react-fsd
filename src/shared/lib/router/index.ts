@@ -1,6 +1,3 @@
-export {
-  createRoute,
-  createLoaderEffect,
-  createActionEffect,
-} from './createRoute';
-export { createBrowserRouter } from './createBrowserRouter';
+export { createRoute } from './createRoute';
+export { createLoaderEffect, createActionEffect } from './lib';
+export type { Route } from './createRoute';

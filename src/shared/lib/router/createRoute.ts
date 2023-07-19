@@ -1,35 +1,16 @@
+import { createEffect, scopeBind, Effect } from 'effector';
 import {
-  Event,
-  Store,
-  createEffect,
-  createEvent,
-  createStore,
-  sample,
-  scopeBind,
-} from 'effector';
-import {
-  ActionFunction,
   IndexRouteObject,
-  LoaderFunction,
   NonIndexRouteObject,
   RouteObject,
 } from 'react-router-dom';
-
-export const createLoaderEffect = (handler: LoaderFunction) =>
-  createEffect(handler);
-
-export const createActionEffect = (handler: ActionFunction) =>
-  createEffect(handler);
-
-export type LoaderRouterObjectEffect = ReturnType<typeof createLoaderEffect>;
-export type ActionRouterObjectEffect = ReturnType<typeof createActionEffect>;
+import { LoaderRouterObjectEffect, ActionRouterObjectEffect } from './lib';
 
 export type Route = {
-  $route: Store<RouteObject | null>;
-  initialize: Event<void>;
+  routeCreationFx: Effect<void, RouteObject, Error>;
 };
 
-export const createRoute = (
+export function createRoute(
   config:
     | Omit<IndexRouteObject, 'loader' | 'action'>
     | Omit<NonIndexRouteObject, 'loader' | 'action'>,
@@ -37,36 +18,29 @@ export const createRoute = (
     loaderFx: LoaderRouterObjectEffect;
     actionFx: ActionRouterObjectEffect;
   }> = {},
-): Route => {
-  const $route = createStore<RouteObject | null>(null);
-  const initialize = createEvent();
-
+): Route {
   const { loaderFx = createEffect(), actionFx = createEffect() } = effects;
 
-  const routeCreationFx = createEffect<void, RouteObject>(() => {
-    const loaderBound = scopeBind(loaderFx);
-    const actionBound = scopeBind(actionFx);
+  const routeCreationFx = createEffect<void, RouteObject>({
+    name: 'routeCreationFx'.concat('.').concat(config.path!),
+    handler: () => {
+      const boundLoaderFx = scopeBind(loaderFx);
+      const boundActionFx = scopeBind(actionFx);
 
-    const route: RouteObject = {
-      ...config,
-      loader: (params) => {
-        if (!effects.loaderFx) return null;
-        return loaderBound(params);
-      },
-      action: (params) => {
-        if (!effects.actionFx) return null;
-        return actionBound(params);
-      },
-    };
-    return route;
+      const route: RouteObject = {
+        ...config,
+        loader: async (params) => {
+          if (!effects.loaderFx) return Promise.resolve(null);
+          return boundLoaderFx(params);
+        },
+        action: async (params) => {
+          if (!effects.actionFx) return Promise.resolve(null);
+          return boundActionFx(params);
+        },
+      };
+      return route;
+    },
   });
 
-  $route.on(routeCreationFx.doneData, (_, route) => route);
-
-  sample({
-    clock: initialize,
-    target: routeCreationFx,
-  });
-
-  return { $route, initialize };
-};
+  return { routeCreationFx };
+}
