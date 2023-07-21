@@ -1,76 +1,19 @@
-// import { attach, createEvent, sample } from 'effector';
-// import { z } from 'zod';
-// import { effectorSessionApi, effectorSessionModel } from '~entities/session';
-// import { abortRequestFx } from '~shared/api/realworld';
-// import { requestFactory } from '~shared/api/request';
-// import { formFactory } from '~shared/lib/form';
-// // import { sessionModel } from '~shared/session';
+import { createEvent } from 'effector';
+import { createLoaderEffect } from '~shared/lib/router';
+import { createRegisterFormModel } from '~widgets/register-form';
 
-// const abortFx = attach({ effect: abortRequestFx });
-// const requestUserFx = attach({ effect: effectorSessionApi.createUserFx });
+const createRegisterPageModel = () => {
+  const routeOpened = createEvent();
+  const pageUnmounted = createEvent();
 
-// export const formSubmitted = createEvent();
-// export const pageUnmounted = createEvent();
-// export const registerRouteOpened = createEvent();
+  const loaderFx = createLoaderEffect(async () => {
+    routeOpened();
+    return null;
+  });
 
-// const {
-//   $form: $newUser,
-//   $valid,
-//   $validating,
-//   fields,
-// } = formFactory({
-//   fields: {
-//     username: {
-//       initialValue: '',
-//       validationSchema: z.string().min(5),
-//       name: 'username',
-//     },
-//     email: {
-//       initialValue: '',
-//       validationSchema: z.string().min(5),
-//       name: 'email',
-//     },
-//     password: {
-//       initialValue: '',
-//       validationSchema: z.string().min(5),
-//       name: 'password',
-//     },
-//   },
-//   validateOn: [formSubmitted],
-//   resetOn: [requestUserFx.done, registerRouteOpened],
-//   name: 'registerForm',
-// });
+  const $$registerForm = createRegisterFormModel();
 
-// export const emailField = fields.email;
-// export const passwordField = fields.password;
-// export const usernameField = fields.username;
+  return { loaderFx, pageUnmounted, $$registerForm };
+};
 
-// export const $formValidating = $validating;
-
-// const cancelToken = 'requestUserFx';
-
-// sample({
-//   clock: formSubmitted,
-//   source: $newUser,
-//   filter: $valid,
-//   fn: (user) => ({ user, params: { cancelToken } }),
-//   target: requestUserFx,
-// });
-
-// sample({
-//   clock: pageUnmounted,
-//   fn: () => cancelToken,
-//   target: abortFx,
-// });
-
-// export const response = requestFactory({
-//   effect: requestUserFx,
-//   reset: [formSubmitted, registerRouteOpened],
-//   name: 'requestUserFx',
-// });
-
-// sample({
-//   clock: requestUserFx.doneData,
-//   fn: (user) => user.token,
-//   target: effectorSessionModel.sessionCreateFx,
-// });
+export const { loaderFx, ...$$registerPage } = createRegisterPageModel();

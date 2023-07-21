@@ -1,6 +1,7 @@
 import { createElement, lazy } from 'react';
 import { createRoute } from '~shared/lib/router';
 import { Loadable } from '~shared/ui/loadable';
+import { loaderFx } from './model';
 
 const RegisterPage = Loadable(
   lazy(() =>
@@ -10,7 +11,12 @@ const RegisterPage = Loadable(
   ),
 );
 
-export const $$route = createRoute({
-  path: 'register',
-  element: createElement(RegisterPage),
-});
+export const $$route = createRoute(
+  {
+    path: 'register',
+    element: createElement(RegisterPage),
+  },
+  {
+    loaderFx,
+  },
+);
