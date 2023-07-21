@@ -1,10 +1,13 @@
 import { UseQueryOptions, useQuery } from '@tanstack/react-query';
+import { attach } from 'effector';
 import {
   GenericErrorModel,
+  NewUserDto,
   RequestParams,
   UserDto,
   realworldApi,
 } from '~shared/api/realworld';
+import { $ctx } from '~shared/ctx';
 import { addUser } from '../model/sessionModel';
 
 export interface User {
@@ -59,3 +62,14 @@ export const useCurrentUser = (
     },
     ...options,
   });
+
+type CreateUserParams = { user: NewUserDto; params?: RequestParams };
+
+export const createUserFx = attach({
+  name: 'createUserFx',
+  source: $ctx,
+  effect: async (ctx, { user, params }: CreateUserParams) => {
+    const response = await ctx.restClient!.users.createUser({ user }, params);
+    return response.data.user;
+  },
+});
