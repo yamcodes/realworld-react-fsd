@@ -1,4 +1,5 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, createEvent, createStore, sample } from 'effector';
+import { TokenStorage } from '~shared/ctx';
 
 type TokenStorageConfig = {
   tokenKey: string;
@@ -9,48 +10,26 @@ export function createTokenStorage(config: TokenStorageConfig) {
 
   const initialize = createEvent();
 
-  const getTokenFx = createEffect({
-    handler: (key: string) => localStorage.getItem(key),
+  const $storage = createStore<TokenStorage>({
+    getToken: () => localStorage.getItem(tokenKey),
+    updateToken: (token: string) => localStorage.setItem(tokenKey, token),
+    clearToken: () => localStorage.removeItem(tokenKey),
   });
 
-  const setTokenFx = createEffect({
-    handler: ({ key, value }: { key: string; value: string }) =>
-      localStorage.setItem(key, value),
+  const getInitTokenFx = attach({
+    source: $storage,
+    effect: (storage) => storage.getToken(),
   });
 
-  const removeTokenFx = createEffect({
-    handler: (key: string) => localStorage.removeItem(key),
-  });
-
-  const updateToken = createEvent<string>();
-  const clearToken = createEvent();
-
-  const $token = createStore<string | null>(null);
-  $token.on(setTokenFx.done, (_, { params }) => params.value);
-  $token.on(removeTokenFx.done, () => null);
+  const $initialToken = createStore<string | null>(null).on(
+    getInitTokenFx.doneData,
+    (_, token) => token,
+  );
 
   sample({
     clock: initialize,
-    fn: () => tokenKey,
-    target: getTokenFx,
+    target: getInitTokenFx,
   });
 
-  sample({
-    clock: getTokenFx.doneData,
-    target: $token,
-  });
-
-  sample({
-    clock: updateToken,
-    fn: (tokenValue) => ({ key: tokenKey, value: tokenValue }),
-    target: setTokenFx,
-  });
-
-  sample({
-    clock: clearToken,
-    fn: () => tokenKey,
-    target: removeTokenFx,
-  });
-
-  return { initialize, $token, updateToken, clearToken };
+  return { initialize, $initialToken, $storage };
 }

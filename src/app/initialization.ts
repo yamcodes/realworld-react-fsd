@@ -1,13 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { attachReduxDevTools } from '@effector/redux-devtools-adapter';
-import {
-  sample,
-  createStore,
-  combine,
-  allSettled,
-  fork,
-  createEvent,
-} from 'effector';
+import { sample, allSettled, fork, createEvent } from 'effector';
 import { $ctx } from '~shared/ctx';
 import {
   createRestClient,
@@ -17,31 +10,28 @@ import {
 
 async function init() {
   const $$tokenStorage = createTokenStorage({ tokenKey: 'testsession' });
-  const $$restClient = createRestClient({ $token: $$tokenStorage.$token });
+  const $$restClient = createRestClient({
+    $token: $$tokenStorage.$initialToken,
+  });
   const $$routing = createRouting();
 
   const initializeCtx = createEvent();
-  sample({
-    // @ts-ignore
-    clock: initializeCtx,
-    source: {
-      tokenStorage: combine({
-        clear: createStore($$tokenStorage.clearToken),
-        update: createStore($$tokenStorage.updateToken),
-        token: $$tokenStorage.$token,
-      }),
-      router: $$routing.$router,
-      restClient: $$restClient.$client,
-    },
-    target: $ctx,
-  });
-
   const initializers = [
     $$tokenStorage.initialize,
     $$restClient.initialize,
     $$routing.initialize,
     initializeCtx,
   ];
+
+  sample({
+    clock: initializeCtx,
+    source: {
+      tokenStorage: $$tokenStorage.$storage,
+      restClient: $$restClient.$client,
+      router: $$routing.$router,
+    },
+    target: $ctx,
+  });
 
   const scope = fork();
 
