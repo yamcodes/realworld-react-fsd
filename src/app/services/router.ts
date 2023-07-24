@@ -24,7 +24,7 @@ const mainRouteModels = [
 export function createRouting() {
   const initialize = createEvent();
 
-  const $router = createStore<Router | null>(null);
+  const $router = createStore<Router>(null as never);
 
   const setupRoutesFx = createEffect({
     name: 'setupRoutesFx',

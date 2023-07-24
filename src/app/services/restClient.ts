@@ -10,7 +10,7 @@ export function createRestClient(config: RestClientConfig) {
 
   const initialize = createEvent();
 
-  const $client = createStore<Api<string> | null>(null);
+  const $client = createStore<Api<string>>(null as never);
 
   const setupRestClientFx = attach({
     name: 'setupRestClientFx',

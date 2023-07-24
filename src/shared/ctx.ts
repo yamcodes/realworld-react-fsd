@@ -1,23 +1,23 @@
 // FIXME:
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Router } from '@remix-run/router';
-import { Event, createStore } from 'effector';
+import { createStore } from 'effector';
 import { Api } from './api/realworld';
 
-type Credentials = {
-  clear: Event<void>;
-  update: Event<string>;
-  token: string | null;
+export type TokenStorage = {
+  getToken: () => string | null;
+  updateToken: (token: string) => void;
+  clearToken: () => void;
 };
 
-type Ctx = {
-  router: Router;
-  credentials: Credentials;
+export type Ctx = {
+  tokenStorage: TokenStorage;
   restClient: Api<string>;
+  router: Router;
 };
 
 export const $ctx = createStore<Ctx>({
-  router: null as never,
-  credentials: null as never,
+  tokenStorage: null as never,
   restClient: null as never,
+  router: null as never,
 });
