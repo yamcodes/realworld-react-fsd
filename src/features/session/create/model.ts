@@ -1,10 +1,16 @@
-import { Store, attach, sample, createEvent } from 'effector';
-import { sessionApi } from '~entities/session';
-import { NewUserDto } from '~shared/api/realworld';
-import { requestFactory } from '~shared/api/request';
+import {
+  Store,
+  attach,
+  createEvent,
+  createStore,
+  combine,
+  sample,
+} from 'effector';
+import { sessionApi, sessionModel } from '~entities/session';
+import { NewUserDto, UserDto } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
 
-type CreateUserModelConfig = {
+export type CreateUserModelConfig = {
   $newUser: Store<NewUserDto>;
 };
 
@@ -13,65 +19,53 @@ export type NewUserModel = ReturnType<typeof createNewUserModel>;
 export function createNewUserModel(config: CreateUserModelConfig) {
   const { $newUser } = config;
 
-  const updateTokenRestFx = attach({
+  const $cancelToken = createStore('createUserFx');
+
+  const abort = createEvent();
+  const reset = createEvent();
+
+  const updateRestTokenFx = attach({
     source: $ctx,
-    effect: (ctx, token: string) => ctx.restClient!.setSecurityData(token),
+    effect: (ctx, token: string) => ctx.restClient.setSecurityData(token),
   });
 
-  const updateTokenStorageFx = attach({
-    source: $ctx,
-    effect: (ctx, token: string) => ctx.credentials!.update(token),
+  const createUserFx = attach({
+    source: { user: $newUser, cancelToken: $cancelToken },
+    effect: async ({ user, cancelToken }) =>
+      sessionApi.createUserFx({ user, params: { cancelToken } }),
   });
 
-  const create = createEvent();
-  const cancel = createEvent();
-
-  // const clearTokenStorageFx = attach({
-  //   source: $ctx,
-  //   effect: (ctx) => ctx.credentials!.clear(),
-  // });
-
-  const cancelToken = 'createUserFx';
-  const createUserFx = attach({ effect: sessionApi.createUserFx });
-  const requestAbortFx = attach({
-    source: $ctx,
-    effect: (ctx) => {
-      ctx.restClient!.abortRequest(cancelToken);
+  const abortUserCreationFx = attach({
+    source: { ctx: $ctx, cancelToken: $cancelToken },
+    effect: ({ ctx, cancelToken }) => {
+      ctx.restClient.abortRequest(cancelToken);
     },
   });
 
-  const $response = requestFactory({ effect: createUserFx });
+  const $data = createStore<UserDto | null>(null)
+    .on(createUserFx.doneData, (_, data) => data)
+    .reset(reset);
 
-  sample({
-    clock: create,
-    source: $newUser,
-    fn: (user) => ({ user, params: { cancelToken } }),
-    target: createUserFx,
+  const $error = createStore<Error | null>(null)
+    .on(createUserFx.failData, (_, error) => error)
+    .reset(reset);
+
+  const $response = combine({
+    data: $data,
+    pending: createUserFx.pending,
+    error: $error,
   });
 
   sample({
     clock: createUserFx.doneData,
     fn: (user) => user.token,
-    target: [updateTokenRestFx, updateTokenStorageFx],
+    target: [sessionModel.updateStorageTokenFx, updateRestTokenFx],
   });
-
-  // sample({
-  //   clock: createUserFx.failData,
-  //   fn: () => null,
-  //   target: [updateTokenRestFx, clearTokenStorageFx],
-  // });
 
   sample({
-    clock: cancel,
-    fn: () => cancelToken,
-    target: requestAbortFx,
+    clock: abort,
+    target: abortUserCreationFx,
   });
 
-  // const response = requestFactory({
-  //   effect: createUserFx,
-  //   reset: [init, initilize],
-  //   name: 'createUserFx',
-  // });
-
-  return { create, cancel, $response };
+  return { createUserFx, abort, reset, $response };
 }
