@@ -1,1 +1,2 @@
-export { formFactory } from './formFactory';
+export { createFormModel } from './formModel';
+export type { FormFieldModel } from './formModel';
