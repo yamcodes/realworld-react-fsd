@@ -1,4 +1,4 @@
-import { createEvent } from 'effector';
+import { createEvent, sample } from 'effector';
 import { createLoaderEffect } from '~shared/lib/router';
 import { createRegisterFormModel } from '~widgets/register-form';
 
@@ -11,7 +11,13 @@ const createRegisterPageModel = () => {
     return null;
   });
 
-  const $$registerForm = createRegisterFormModel();
+  const { initialize: initializeRegisterForm, ...$$registerForm } =
+    createRegisterFormModel();
+
+  sample({
+    clock: routeOpened,
+    target: initializeRegisterForm,
+  });
 
   return { loaderFx, pageUnmounted, $$registerForm };
 };
