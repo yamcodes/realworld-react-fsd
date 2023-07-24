@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useParams } from 'react-router-dom';
-import { sessionModel } from '~entities/session';
+// import { sessionModel } from '~entities/session';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
 import {
@@ -15,7 +15,8 @@ import { $article, $error, $pending } from './model';
 export function ArticlePage() {
   const { slug } = useParams();
 
-  const user = sessionModel.useCurrentUser();
+  // const user = sessionModel.useCurrentUser();
+  // const user = false;
 
   const [article, pending, error] = useUnit([$article, $pending, $error]);
 
@@ -42,12 +43,12 @@ export function ArticlePage() {
       </FullPageWrapper>
     );
 
-  const { title, body, tagList, author } = article;
+  const { title, body, tagList } = article;
 
-  const isAuth = Boolean(user);
-  const isGuest = !isAuth;
-  const isUser = isAuth && !(user!.username === author.username);
-  const isCurrentUser = isAuth && user!.username === author.username;
+  // const isAuth = Boolean(user);
+  const isGuest = true;
+  const isUser = false;
+  const isCurrentUser = false;
 
   return (
     <div className="article-page">

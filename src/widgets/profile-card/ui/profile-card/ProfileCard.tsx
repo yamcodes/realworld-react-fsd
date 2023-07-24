@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { IoAdd, IoSettingsSharp } from 'react-icons/io5';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { profileApi } from '~entities/profile';
-import { sessionModel } from '~entities/session';
+// import { sessionModel } from '~entities/session';
 import { FollowUserButton, UnfollowUserButton } from '~features/profile';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { Button } from '~shared/ui/button';
@@ -44,12 +44,15 @@ export function ProfileCard(props: ProfileCardProps) {
 
   const navigate = useNavigate();
 
-  const user = sessionModel.useCurrentUser();
+  // const user = sessionModel.useCurrentUser();
+  const user = false;
 
-  const isAuth = Boolean(user);
-  const isGuest = !isAuth;
-  const isUser = isAuth && !(user?.username === username);
-  const isCurrentUser = isAuth && user?.username === username;
+  // const isAuth = Boolean(user);
+  const isGuest = true;
+  const isUser = false;
+  const isCurrentUser = false;
+  // const isUser = isAuth && !(user?.username === username);
+  // const isCurrentUser = isAuth && user?.username === username;
 
   if (isCurrentUser) {
     queryClient.setQueryData(['profile', username], user);

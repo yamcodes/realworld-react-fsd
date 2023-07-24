@@ -2,13 +2,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import { object, string } from 'yup';
-import { sessionModel } from '~entities/session';
+// import { sessionModel } from '~entities/session';
 import { LogoutButton, useUpdateCurrentUser } from '~features/session';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { ErrorHandler } from '~shared/ui/error-handler';
 
 export function SettingsPage() {
-  const user = sessionModel.useCurrentUser();
+  // const user = sessionModel.useCurrentUser();
+  const user = false;
 
   const navigate = useNavigate();
 
@@ -27,8 +28,10 @@ export function SettingsPage() {
 
             <Formik
               initialValues={{
+                // @ts-ignore
                 ...user!,
                 password: undefined,
+                // @ts-ignore
                 ...(!user!.bio && { bio: undefined }),
               }}
               validationSchema={object().shape({
@@ -42,6 +45,7 @@ export function SettingsPage() {
               onSubmit={(values, { setSubmitting }) => {
                 mutate(values, {
                   onSuccess: () => {
+                    // @ts-ignore
                     navigate(PATH_PAGE.profile.root(user!.username));
                   },
                   onSettled: () => {

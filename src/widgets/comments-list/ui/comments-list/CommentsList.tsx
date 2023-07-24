@@ -1,5 +1,5 @@
 import { CommentCard, commentApi } from '~entities/comment';
-import { sessionModel } from '~entities/session';
+// import { sessionModel } from '~entities/session';
 import { DeleteCommentIconButtton } from '~features/comment';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { Spinner } from '~shared/ui/spinner';
@@ -11,7 +11,8 @@ type CommentsListProps = {
 export function CommentsList(props: CommentsListProps) {
   const { slug } = props;
 
-  const isAuth = sessionModel.useAuth();
+  // const isAuth = sessionModel.useAuth();
+  const isAuth = false;
 
   const {
     data: comments,

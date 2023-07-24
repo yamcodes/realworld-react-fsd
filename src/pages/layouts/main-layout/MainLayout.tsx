@@ -1,10 +1,11 @@
 import { IoCreateOutline, IoSettingsSharp } from 'react-icons/io5';
 import { NavLink, Outlet } from 'react-router-dom';
-import { sessionApi, sessionModel } from '~entities/session';
+import { sessionApi } from '~entities/session';
 import { PATH_PAGE } from '~shared/lib/react-router';
 
 export function MainLayout() {
-  const user = sessionModel.useCurrentUser();
+  // const user = sessionModel.useCurrentUser();
+  const user = false;
 
   sessionApi.useCurrentUser({ enabled: !!user });
 
@@ -56,14 +57,17 @@ export function MainLayout() {
               <li className="nav-item">
                 <NavLink
                   className="nav-link"
+                  // @ts-ignore
                   to={PATH_PAGE.profile.root(user.username)}
                 >
                   <img
                     className="user-pic"
+                    // @ts-ignore
                     src={user.image || ''}
+                    // @ts-ignore
                     alt={user.username}
                   />
-                  {user.username}
+                  {/* {user.username} */}
                 </NavLink>
               </li>
             </ul>

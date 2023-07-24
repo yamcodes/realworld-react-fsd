@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { object, string } from 'yup';
 import { commentApi } from '~entities/comment';
 import { profileApi } from '~entities/profile';
-import { sessionModel } from '~entities/session';
+// import { sessionModel } from '~entities/session';
 import { useCreateComment } from '~features/comment';
 import { NewCommentDto } from '~shared/api/realworld';
 import { PATH_PAGE } from '~shared/lib/react-router';
@@ -23,7 +23,8 @@ type NewCommentEditorProps = {
 export function NewCommentEditor(props: NewCommentEditorProps) {
   const { slug } = props;
 
-  const user = sessionModel.useCurrentUser();
+  // const user = sessionModel.useCurrentUser();
+  const user = false;
 
   const queryClient = useQueryClient();
 
@@ -45,6 +46,7 @@ export function NewCommentEditor(props: NewCommentEditorProps) {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values, { setSubmitting, resetForm }) => {
+        // @ts-ignore
         const { token, ...other } = user;
         const author: profileApi.Profile = { ...other, following: false };
 

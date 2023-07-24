@@ -7,7 +7,7 @@ import {
   ArticlePreviewCard,
   ArticlesList,
 } from '~entities/article';
-import { sessionModel } from '~entities/session';
+// import { sessionModel } from '~entities/session';
 import {
   FavoriteArticleButton,
   UnfavoriteArticleButton,
@@ -22,7 +22,8 @@ type GlobalArticlesListProps = {
 export function GlobalArticlesList(props: GlobalArticlesListProps) {
   const { query } = props;
 
-  const isAuth = sessionModel.useAuth();
+  // const isAuth = sessionModel.useAuth();
+  const isAuth = false;
 
   const navigate = useNavigate();
 
