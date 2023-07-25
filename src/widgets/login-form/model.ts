@@ -35,11 +35,6 @@ export function createLoginFormModel() {
   const $$loginUser = createLoginUserModel({ $loginUser: $$loginForm.$form });
 
   sample({
-    clock: initialize,
-    target: [$$loginForm.reset, $$loginUser.reset],
-  });
-
-  sample({
     clock: submitted,
     target: $$loginForm.validateFx,
   });
@@ -57,7 +52,7 @@ export function createLoginFormModel() {
 
   sample({
     clock: unmounted,
-    target: $$loginUser.abort,
+    target: [$$loginUser.abort, $$loginForm.reset, $$loginUser.reset],
   });
 
   return {

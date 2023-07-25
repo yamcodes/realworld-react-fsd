@@ -1,35 +1,48 @@
-import { attach, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { TokenStorage } from '~shared/ctx';
 
 type TokenStorageConfig = {
+  storage: {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem(key: string): void;
+  };
   tokenKey: string;
+  name: string;
 };
 
 export function createTokenStorage(config: TokenStorageConfig) {
-  const { tokenKey } = config;
+  const { storage, tokenKey, name } = config;
 
-  const initialize = createEvent();
+  const initialize = createEvent({ name: name.concat('.initialize') });
 
-  const $storage = createStore<TokenStorage>({
-    getToken: () => localStorage.getItem(tokenKey),
-    updateToken: (token: string) => localStorage.setItem(tokenKey, token),
-    clearToken: () => localStorage.removeItem(tokenKey),
-  });
-
-  const getInitTokenFx = attach({
-    source: $storage,
-    effect: (storage) => storage.getToken(),
-  });
-
-  const $initialToken = createStore<string | null>(null).on(
-    getInitTokenFx.doneData,
-    (_, token) => token,
+  const $storage = createStore<TokenStorage>(
+    {
+      getToken: () => storage.getItem(tokenKey),
+      updateToken: (token: string) => storage.setItem(tokenKey, token),
+      clearToken: () => localStorage.removeItem(tokenKey),
+    },
+    { name: name.concat('.$storage') },
   );
+
+  const setupTokenStorageFx = createEffect({
+    name: name.concat('.setupTokenStorageFx'),
+    handler: () => ({
+      getToken: () => storage.getItem(tokenKey),
+      updateToken: (token: string) => storage.setItem(tokenKey, token),
+      clearToken: () => localStorage.removeItem(tokenKey),
+    }),
+  });
 
   sample({
     clock: initialize,
-    target: getInitTokenFx,
+    target: setupTokenStorageFx,
   });
 
-  return { initialize, $initialToken, $storage };
+  sample({
+    clock: setupTokenStorageFx.doneData,
+    target: $storage,
+  });
+
+  return { initialize, $storage };
 }

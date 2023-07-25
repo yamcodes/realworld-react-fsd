@@ -1,21 +1,13 @@
-import { Store, createStore, sample, attach, createEvent } from 'effector';
+import { createStore, sample, createEvent, createEffect } from 'effector';
 import { Api } from '~shared/api/realworld';
 
-type RestClientConfig = {
-  $token: Store<string | null>;
-};
-
-export function createRestClient(config: RestClientConfig) {
-  const { $token } = config;
-
+export function createRestClient() {
   const initialize = createEvent();
 
   const $client = createStore<Api<string>>(null as never);
 
-  const setupRestClientFx = attach({
-    name: 'setupRestClientFx',
-    source: { userToken: $token },
-    effect: ({ userToken }) => {
+  const setupRestClientFx = createEffect({
+    handler: () => {
       const client = new Api<string>({
         baseApiParams: {
           headers: {
@@ -26,8 +18,6 @@ export function createRestClient(config: RestClientConfig) {
         securityWorker: (token) =>
           token ? { headers: { Authorization: `Token ${token}` } } : {},
       });
-
-      client.setSecurityData(userToken);
 
       return client;
     },

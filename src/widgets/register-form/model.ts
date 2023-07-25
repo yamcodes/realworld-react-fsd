@@ -41,11 +41,6 @@ export function createRegisterFormModel() {
   });
 
   sample({
-    clock: initialize,
-    target: [$$registerForm.reset, $$newUser.reset],
-  });
-
-  sample({
     clock: submitted,
     target: $$registerForm.validateFx,
   });
@@ -63,7 +58,7 @@ export function createRegisterFormModel() {
 
   sample({
     clock: unmounted,
-    target: $$newUser.abort,
+    target: [$$newUser.abort, $$registerForm.reset, $$newUser.reset],
   });
 
   return {

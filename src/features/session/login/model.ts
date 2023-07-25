@@ -6,7 +6,7 @@ import {
   combine,
   sample,
 } from 'effector';
-import { sessionApi, sessionModel } from '~entities/session';
+import { sessionApi, $$sessionModel } from '~entities/session';
 import { LoginUserDto, UserDto } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
 
@@ -23,11 +23,6 @@ export function createLoginUserModel(config: CreateLoginModelConfig) {
 
   const abort = createEvent();
   const reset = createEvent();
-
-  const updateRestTokenFx = attach({
-    source: $ctx,
-    effect: (ctx, token: string) => ctx.restClient.setSecurityData(token),
-  });
 
   const loginUserFx = attach({
     source: { user: $loginUser, cancelToken: $cancelToken },
@@ -59,7 +54,7 @@ export function createLoginUserModel(config: CreateLoginModelConfig) {
   sample({
     clock: loginUserFx.doneData,
     fn: (user) => user.token,
-    target: [sessionModel.updateStorageTokenFx, updateRestTokenFx],
+    target: $$sessionModel.updateToken,
   });
 
   sample({

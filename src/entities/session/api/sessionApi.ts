@@ -85,3 +85,14 @@ export const loginUserFx = attach({
     return response.data.user;
   },
 });
+
+type CurrentUserParams = { params?: RequestParams };
+
+export const currentUserFx = attach({
+  name: 'currentUserFx',
+  source: $ctx,
+  effect: async (ctx, { params }: CurrentUserParams) => {
+    const response = await ctx.restClient.user.getCurrentUser(params);
+    return response.data.user;
+  },
+});

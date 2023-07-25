@@ -1,37 +1,42 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { attachReduxDevTools } from '@effector/redux-devtools-adapter';
-import { sample, allSettled, fork, createEvent } from 'effector';
+import { allSettled, fork, combine } from 'effector';
+import { $$sessionModel } from '~entities/session';
 import { $ctx } from '~shared/ctx';
 import {
+  createContext,
   createRestClient,
   createRouting,
   createTokenStorage,
 } from './services';
 
 async function init() {
-  const $$tokenStorage = createTokenStorage({ tokenKey: 'testsession' });
-  const $$restClient = createRestClient({
-    $token: $$tokenStorage.$initialToken,
+  const $$tokenStorage = createTokenStorage({
+    storage: localStorage,
+    tokenKey: 'testsession',
+    name: 'localStorage',
   });
+  const $$restClient = createRestClient();
   const $$routing = createRouting();
 
-  const initializeCtx = createEvent();
+  const $context = combine({
+    tokenStorage: $$tokenStorage.$storage,
+    restClient: $$restClient.$client,
+    router: $$routing.$router,
+  });
+
+  const $$context = createContext({
+    $context,
+    $store: $ctx,
+  });
+
   const initializers = [
     $$tokenStorage.initialize,
     $$restClient.initialize,
     $$routing.initialize,
-    initializeCtx,
+    $$context.initilize,
+    $$sessionModel.initilize,
   ];
-
-  sample({
-    clock: initializeCtx,
-    source: {
-      tokenStorage: $$tokenStorage.$storage,
-      restClient: $$restClient.$client,
-      router: $$routing.$router,
-    },
-    target: $ctx,
-  });
 
   const scope = fork();
 
