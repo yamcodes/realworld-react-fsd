@@ -5,6 +5,7 @@ import {
   LoginUserDto,
   NewUserDto,
   RequestParams,
+  UpdateUserDto,
   UserDto,
   realworldApi,
 } from '~shared/api/realworld';
@@ -93,6 +94,20 @@ export const currentUserFx = attach({
   source: $ctx,
   effect: async (ctx, { params }: CurrentUserParams) => {
     const response = await ctx.restClient.user.getCurrentUser(params);
+    return response.data.user;
+  },
+});
+
+type UpdateUserParams = { user: UpdateUserDto; params?: RequestParams };
+
+export const updateUserFx = attach({
+  name: 'updateUserFx',
+  source: $ctx,
+  effect: async (ctx, { user, params }: UpdateUserParams) => {
+    const response = await ctx.restClient.user.updateCurrentUser(
+      { user },
+      params,
+    );
     return response.data.user;
   },
 });

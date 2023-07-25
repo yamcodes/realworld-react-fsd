@@ -10,6 +10,7 @@ import { $$loginRoute } from '~pages/login';
 import { $$page404Route } from '~pages/page-404';
 import { $$profileRoute } from '~pages/profile';
 import { $$registerRoute } from '~pages/register';
+import { $$settingsRoute } from '~pages/settings';
 
 const mainRouteModels = [
   $$articleRoute,
@@ -19,6 +20,7 @@ const mainRouteModels = [
   $$page404Route,
   $$profileRoute,
   $$registerRoute,
+  $$settingsRoute,
 ];
 
 export function createRouting() {

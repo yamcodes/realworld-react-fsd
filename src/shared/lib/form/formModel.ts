@@ -28,8 +28,12 @@ type FormFields<Values extends AnyFormValues> = {
 type Form<Values extends AnyFormValues> = {
   fields: FormFields<Values>;
   $form: Store<Values>;
+  validate: Event<void>;
+  validated: {
+    success: Event<void>;
+    failure: Event<void>;
+  };
   reset: Event<void>;
-  validateFx: Effect<void, (string[] | null)[] | null, Error>;
 };
 
 export function createFormModel<Values extends AnyFormValues>(
@@ -38,6 +42,9 @@ export function createFormModel<Values extends AnyFormValues>(
   const { fields } = formConfig;
 
   const reset = createEvent();
+  const validate = createEvent();
+  const success = createEvent();
+  const failure = createEvent();
 
   const fieldNames = Object.keys(fields);
 
@@ -76,6 +83,23 @@ export function createFormModel<Values extends AnyFormValues>(
   });
 
   sample({
+    clock: validate,
+    target: validateFx,
+  });
+
+  sample({
+    clock: validateFx.doneData,
+    filter: (errors) => !errors,
+    target: success,
+  });
+
+  sample({
+    clock: validateFx.doneData,
+    filter: (errors) => Boolean(errors),
+    target: failure,
+  });
+
+  sample({
     clock: reset,
     target: resetForm,
   });
@@ -83,7 +107,11 @@ export function createFormModel<Values extends AnyFormValues>(
   return {
     fields: outputFields,
     $form,
+    validate,
+    validated: {
+      success,
+      failure,
+    },
     reset,
-    validateFx,
   } as Form<Values>;
 }

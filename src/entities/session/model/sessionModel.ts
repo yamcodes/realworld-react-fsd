@@ -5,13 +5,19 @@ import { currentUserFx } from '../api/sessionApi';
 
 function createSessionModel() {
   const initilize = createEvent();
+  const update = createEvent<UserDto>();
+  const clear = createEvent();
 
-  const getStorageTokenFx = attach({
+  const initilizeFx = attach({
     source: $ctx,
-    effect: (ctx) => ctx.tokenStorage.getToken(),
+    effect: (ctx) => {
+      const token = ctx.tokenStorage.getToken();
+      if (token) ctx.restClient.setSecurityData(token);
+      return token;
+    },
   });
 
-  const updateSessionFx = attach({
+  const updateFx = attach({
     source: $ctx,
     effect: (ctx, token: string) => {
       ctx.tokenStorage.updateToken(token);
@@ -19,7 +25,7 @@ function createSessionModel() {
     },
   });
 
-  const clearSessionFx = attach({
+  const clearFx = attach({
     source: $ctx,
     effect: (ctx) => {
       ctx.tokenStorage.clearToken();
@@ -27,35 +33,45 @@ function createSessionModel() {
     },
   });
 
-  const $token = createStore<string | null>(null).on(
-    getStorageTokenFx.doneData,
-    (_, token) => token,
-  );
+  const $cancelToken = createStore('requestCurrentUserFx');
+  const requestCurrentUserFx = attach({
+    source: $cancelToken,
+    effect: async (cancelToken) => currentUserFx({ params: { cancelToken } }),
+  });
 
-  const $isAuth = $token.map(Boolean);
-
-  const $visitor = createStore<UserDto | null>(null).on(
-    currentUserFx.doneData,
-    (_, user) => user,
-  );
+  const $visitor = createStore<UserDto | null>(null)
+    .on(requestCurrentUserFx.doneData, (_, user) => user)
+    .on(update, (_, user) => user)
+    .reset(clear);
 
   const $error = createStore<Error | null>(null).on(
-    currentUserFx.failData,
+    requestCurrentUserFx.failData,
     (_, error) => error,
   );
 
   sample({
     clock: initilize,
-    target: getStorageTokenFx,
+    target: initilizeFx,
   });
 
   sample({
-    clock: getStorageTokenFx.doneData,
-    filter: (token) => Boolean(token),
-    target: updateSessionFx,
+    clock: initilizeFx.doneData,
+    filter: Boolean,
+    target: requestCurrentUserFx,
   });
 
-  return { initilize, $visitor, $error };
+  sample({
+    clock: [update, requestCurrentUserFx.doneData],
+    fn: (user) => user.token,
+    target: updateFx,
+  });
+
+  sample({
+    clock: [clear, requestCurrentUserFx.fail],
+    target: clearFx,
+  });
+
+  return { initilize, update, clear, $visitor, $error };
 }
 
 export const $$sessionModel = createSessionModel();
