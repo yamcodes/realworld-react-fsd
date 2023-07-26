@@ -1,38 +1,12 @@
-import { useState } from 'react';
-import cn from 'classnames';
-import { useParams } from 'react-router-dom';
-import { GlobalArticlesList } from '~widgets/global-articles-list';
 import { ProfileCard } from '~widgets/profile-card';
+import { $$profilePage } from './model';
 
-type ProfilePageProps = {
-  favorites?: boolean;
-};
-
-type TabsState = {
-  author?: string;
-  favorited?: string;
-};
-
-export function ProfilePage(props: ProfilePageProps) {
-  const { favorites } = props;
-
-  const { username } = useParams();
-
-  const initTabsState: TabsState = {
-    ...(favorites && { favorited: username }),
-    ...(!favorites && { author: username }),
-  };
-
-  const [tabs, setTabs] = useState<TabsState>(initTabsState);
-
-  const onAuthorfeedClick = () => setTabs({ author: username });
-  const onFavoritedfeedClick = () => setTabs({ favorited: username });
-
+export function ProfilePage() {
   return (
     <div className="profile-page">
-      <ProfileCard username={username!} />
+      <ProfileCard $$model={$$profilePage.$$profileCard} />
 
-      <div className="container">
+      {/* <div className="container">
         <div className="row">
           <div className="col-xs-12 col-md-10 offset-md-1">
             <div className="articles-toggle">
@@ -71,7 +45,7 @@ export function ProfilePage(props: ProfilePageProps) {
             )}
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

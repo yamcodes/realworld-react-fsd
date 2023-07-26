@@ -14,13 +14,19 @@ const createLoginPageModel = () => {
   });
 
   const loaderFx = createLoaderEffect(async () => {
-    if ($$sessionModel.$visitor) toHomeFx();
     routeOpened();
     return null;
   });
 
   const { initialize: initializeLoginForm, ...$$loginForm } =
     createLoginFormModel();
+
+  sample({
+    clock: routeOpened,
+    source: $$sessionModel.$visitor,
+    filter: Boolean,
+    target: toHomeFx,
+  });
 
   sample({
     clock: routeOpened,

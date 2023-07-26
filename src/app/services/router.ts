@@ -18,7 +18,7 @@ const mainRouteModels = [
   $$homeRoute,
   $$loginRoute,
   $$page404Route,
-  $$profileRoute,
+  ...$$profileRoute,
   $$registerRoute,
   $$settingsRoute,
 ];

@@ -1,14 +1,10 @@
-import { ReactNode } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { IoAdd, IoSettingsSharp } from 'react-icons/io5';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { profileApi } from '~entities/profile';
-// import { sessionModel } from '~entities/session';
-import { FollowUserButton, UnfollowUserButton } from '~features/profile';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { ReactNode, useEffect } from 'react';
+import { useUnit } from 'effector-react';
+import { IoAdd } from 'react-icons/io5';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { Spinner } from '~shared/ui/spinner';
+import { ProfileCardModel } from './model';
 
 type ProfileWrapperProps = {
   children: ReactNode;
@@ -34,62 +30,36 @@ function ProfileWrapper(props: ProfileWrapperProps) {
 }
 
 type ProfileCardProps = {
-  username: string;
+  $$model: ProfileCardModel;
 };
 
 export function ProfileCard(props: ProfileCardProps) {
-  const { username } = props;
+  const { $$model } = props;
 
-  const queryClient = useQueryClient();
+  const [profile, { access }] = useUnit([$$model.$profile, $$model.$user]);
+  const { error, pending } = useUnit($$model.$response);
+  const unmounted = useUnit($$model.unmounted);
+  const followButtonClicked = useUnit($$model.followButtonClicked);
 
-  const navigate = useNavigate();
-
-  // const user = sessionModel.useCurrentUser();
-  const user = false;
-
-  // const isAuth = Boolean(user);
-  const isGuest = true;
-  const isUser = false;
-  const isCurrentUser = false;
-  // const isUser = isAuth && !(user?.username === username);
-  // const isCurrentUser = isAuth && user?.username === username;
-
-  if (isCurrentUser) {
-    queryClient.setQueryData(['profile', username], user);
-  }
-
-  const {
-    data: profile,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-  } = profileApi.useProfile(
-    username,
-    { secure: !!user },
-    { enabled: !isCurrentUser },
-  );
-
-  if (isError && error.status === 404)
-    return <Navigate to={PATH_PAGE.page404} />;
+  useEffect(() => unmounted, [unmounted]);
 
   return (
     <div className="user-info">
       <div className="container">
         <div className="row">
-          {isLoading && (
+          {pending && (
             <ProfileWrapper>
               <Spinner />
             </ProfileWrapper>
           )}
 
-          {isError && (
+          {error && (
             <ProfileWrapper>
-              <ErrorHandler error={error} />
+              <ErrorHandler error={error as any} />
             </ProfileWrapper>
           )}
 
-          {isSuccess && (
+          {profile && (
             <div className="col-xs-12 col-md-10 offset-md-1">
               <img
                 src={profile.image}
@@ -99,19 +69,19 @@ export function ProfileCard(props: ProfileCardProps) {
               <h4>{profile.username}</h4>
               <p>{profile.bio}</p>
 
-              {isGuest && (
+              {access === 'anonymous' && (
                 <Button
                   color="secondary"
                   variant="outline"
                   className="action-btn"
-                  onClick={() => navigate(PATH_PAGE.login)}
+                  onClick={followButtonClicked}
                 >
                   <IoAdd size={16} />
                   &nbsp; Follow {profile.username}
                 </Button>
               )}
 
-              {isUser &&
+              {/* {access === 'authenticated' &&
                 (profile.following ? (
                   <UnfollowUserButton
                     profile={profile}
@@ -121,7 +91,7 @@ export function ProfileCard(props: ProfileCardProps) {
                   <FollowUserButton profile={profile} className="action-btn" />
                 ))}
 
-              {isCurrentUser && (
+              {access === 'authorized' && (
                 <Button
                   color="secondary"
                   variant="outline"
@@ -131,7 +101,7 @@ export function ProfileCard(props: ProfileCardProps) {
                   <IoSettingsSharp size={14} />
                   &nbsp; Edit Profile Settings
                 </Button>
-              )}
+              )} */}
             </div>
           )}
         </div>

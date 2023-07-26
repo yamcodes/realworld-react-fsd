@@ -1,52 +1,16 @@
-import { UseQueryOptions, useQuery } from '@tanstack/react-query';
-import {
-  GenericErrorModel,
-  ProfileDto,
-  RequestParams,
-  realworldApi,
-} from '~shared/api/realworld';
+import { attach } from 'effector';
+import { RequestParams } from '~shared/api/realworld';
+import { $ctx } from '~shared/ctx';
 
-export interface Profile {
-  username: string;
-  bio: string;
-  image: string;
-  following: boolean;
-}
+type GetProfileParams = { username: string; params?: RequestParams };
 
-export function mapProfile(profileDto: ProfileDto): Profile {
-  return profileDto;
-}
-
-export const profileKeys = {
-  profile: {
-    root: ['profile'],
-    username: (username: string) => [...profileKeys.profile.root, username],
+export const getProfileFx = attach({
+  source: $ctx,
+  effect: async (ctx, { username, params }: GetProfileParams) => {
+    const response = await ctx.restClient.profiles.getProfileByUsername(
+      username,
+      params,
+    );
+    return response.data.profile;
   },
-};
-
-type UseProfileQuery = UseQueryOptions<
-  Profile,
-  GenericErrorModel,
-  Profile,
-  string[]
->;
-type UseProfileQueryOptions = Omit<UseProfileQuery, 'queryKey' | 'queryFn'>;
-
-export function useProfile(
-  username: string,
-  params?: RequestParams,
-  options?: UseProfileQueryOptions,
-) {
-  return useQuery({
-    queryKey: profileKeys.profile.username(username),
-    queryFn: async ({ signal }) => {
-      const response = await realworldApi.profiles.getProfileByUsername(
-        username,
-        { signal, ...params },
-      );
-
-      return mapProfile(response.data.profile);
-    },
-    ...options,
-  });
-}
+});

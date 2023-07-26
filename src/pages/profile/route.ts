@@ -9,15 +9,20 @@ const ProfilePage = Loadable(
   ),
 );
 
-export const $$route = createRoute(
+const $$usernameRoute = createRoute(
   {
-    path: 'profile',
-    children: [
-      {
-        path: ':username',
-        element: createElement(ProfilePage),
-      },
-    ],
+    path: 'profile/:username',
+    element: createElement(ProfilePage),
   },
   { loaderFx },
 );
+
+const $$usernameFavoritesRoute = createRoute(
+  {
+    path: 'profile/:username/favorites',
+    element: createElement(ProfilePage),
+  },
+  { loaderFx },
+);
+
+export const $$route = [$$usernameRoute, $$usernameFavoritesRoute];

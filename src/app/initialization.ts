@@ -1,10 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { attachReduxDevTools } from '@effector/redux-devtools-adapter';
-import { allSettled, fork, combine } from 'effector';
+import { allSettled, fork, combine, sample } from 'effector';
 import { $$sessionModel } from '~entities/session';
 import { $ctx } from '~shared/ctx';
 import {
-  createContext,
   createRestClient,
   createRouting,
   createTokenStorage,
@@ -25,18 +24,17 @@ async function init() {
     router: $$routing.$router,
   });
 
-  const $$context = createContext({
-    $context,
-    $store: $ctx,
-  });
-
   const initializers = [
     $$tokenStorage.initialize,
     $$restClient.initialize,
-    $$routing.initialize,
-    $$context.initilize,
     $$sessionModel.initilize,
+    $$routing.initialize,
   ];
+
+  sample({
+    source: $context,
+    target: $ctx,
+  });
 
   const scope = fork();
 
