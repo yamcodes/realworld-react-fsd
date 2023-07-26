@@ -12,6 +12,48 @@ import { createQuery } from '~shared/api/createQuery';
 import { ProfileDto } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
 
+export type FollowProfileModel = Omit<
+  ReturnType<typeof createFollowProfileModel>,
+  'initialize'
+>;
+
+function createFollowProfileModel() {
+  const initialize = createEvent<ProfileDto | null>();
+  const followed = createEvent();
+
+  const $$followProfileQuery = createQuery({
+    name: 'followProfileQuery',
+    fx: profileApi.followProfileFx,
+  });
+
+  const $profile = restore(initialize, null)
+    .on($$followProfileQuery.start, (profile) => ({
+      ...profile!,
+      following: true,
+    }))
+    .on($$followProfileQuery.finished.success, (_, profile) => profile)
+    .reset($$followProfileQuery.finished.failure);
+
+  const $username = $profile.map((profile) => profile?.username);
+
+  sample({
+    clock: followed,
+    source: $profile,
+    filter: Boolean,
+    fn: (profile) => ({
+      username: profile.username,
+      params: { cancelToken: 'getProfileQuery' },
+    }),
+    target: $$followProfileQuery.start,
+  });
+
+  return {
+    initialize,
+    $username,
+    followed,
+  };
+}
+
 export type Access = {
   access: 'anonymous' | 'authorized' | 'authenticated';
   username: string | null;
@@ -37,6 +79,8 @@ export function createProfileCardModel() {
     name: 'getProfileQuery',
   });
 
+  const $$followProfile = createFollowProfileModel();
+
   const $profile = createStore<ProfileDto | null>(null).reset(load);
   const $user = restore(load, { access: 'anonymous', username: null });
 
@@ -57,7 +101,7 @@ export function createProfileCardModel() {
 
   sample({
     clock: $$getProfileQuery.finished.success,
-    target: $profile,
+    target: [$profile, $$followProfile.initialize],
   });
 
   sample({
@@ -69,7 +113,7 @@ export function createProfileCardModel() {
     // @ts-expect-error
     clock: loadVisitor,
     source: $$sessionModel.$visitor,
-    target: $profile,
+    target: [$profile, $$followProfile.initialize],
   });
 
   const followButtonClicked = createEvent();
@@ -92,5 +136,6 @@ export function createProfileCardModel() {
     $user,
     $profile,
     $response: $$getProfileQuery.$response,
+    $$followProfile,
   };
 }

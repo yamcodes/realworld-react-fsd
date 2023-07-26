@@ -14,3 +14,16 @@ export const getProfileFx = attach({
     return response.data.profile;
   },
 });
+
+type FollowProfileParams = { username: string; params?: RequestParams };
+
+export const followProfileFx = attach({
+  source: $ctx,
+  effect: async (ctx, { username, params }: FollowProfileParams) => {
+    const response = await ctx.restClient.profiles.followUserByUsername(
+      username,
+      params,
+    );
+    return response.data.profile;
+  },
+});

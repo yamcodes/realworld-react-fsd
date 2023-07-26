@@ -4,7 +4,30 @@ import { IoAdd } from 'react-icons/io5';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { Spinner } from '~shared/ui/spinner';
-import { ProfileCardModel } from './model';
+import { FollowProfileModel, ProfileCardModel } from './model';
+
+type FollowProfileProps = {
+  $$model: FollowProfileModel;
+};
+
+function FollowProfile(props: FollowProfileProps) {
+  const { $$model } = props;
+
+  const username = useUnit($$model.$username);
+  const followed = useUnit($$model.followed);
+
+  return (
+    <Button
+      color="secondary"
+      variant="outline"
+      className="action-btn"
+      onClick={followed}
+    >
+      <IoAdd size={16} />
+      &nbsp; Follow {username}
+    </Button>
+  );
+}
 
 type ProfileWrapperProps = {
   children: ReactNode;
@@ -80,6 +103,8 @@ export function ProfileCard(props: ProfileCardProps) {
                   &nbsp; Follow {profile.username}
                 </Button>
               )}
+
+              <FollowProfile $$model={$$model.$$followProfile} />
 
               {/* {access === 'authenticated' &&
                 (profile.following ? (
