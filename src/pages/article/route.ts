@@ -4,7 +4,7 @@ import { Loadable } from '~shared/ui/loadable';
 
 const ArticlePage = Loadable(
   lazy(() =>
-    import('./ArticlePage').then((module) => ({ default: module.ArticlePage })),
+    import('./ui').then((module) => ({ default: module.ArticlePage })),
   ),
 );
 

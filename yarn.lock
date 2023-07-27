@@ -394,6 +394,11 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@farfetched/core@^0.8.14":
+  version "0.8.14"
+  resolved "https://registry.yarnpkg.com/@farfetched/core/-/core-0.8.14.tgz#efadf60c38b61d61324dd46ead288149919d880c"
+  integrity sha512-xipn1FqRL+KhEbvp7df3HIJVf4IV57FKjRvPHb+UYl8ZrBhxiEzyqjyz54a7fD7UAvRYDgxqZFWfenY6uCrZig==
+
 "@humanwhocodes/config-array@^0.6.0":
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.6.0.tgz#b5621fdb3b32309d2d16575456cbc277fa8f021a"

@@ -5,7 +5,7 @@ import { loaderFx } from './model';
 
 const SettingsPage = Loadable(
   lazy(() =>
-    import('./SettingsPage').then((module) => ({
+    import('./ui').then((module) => ({
       default: module.SettingsPage,
     })),
   ),

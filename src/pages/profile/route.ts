@@ -5,7 +5,7 @@ import { loaderFx } from './model';
 
 const ProfilePage = Loadable(
   lazy(() =>
-    import('./ProfilePage').then((module) => ({ default: module.ProfilePage })),
+    import('./ui').then((module) => ({ default: module.ProfilePage })),
   ),
 );
 

@@ -1,46 +1,41 @@
-import {
-  createEvent,
-  createStore,
-  createEffect,
-  sample,
-  attach,
-} from 'effector';
-import {
-  ArticleDto,
-  GenericErrorModel,
-  RequestParams,
-  realworldApi,
-} from '~shared/api/realworld';
+import { combine, createEvent, restore } from 'effector';
+import { $$sessionModel } from '~entities/session';
+import { createLoaderEffect } from '~shared/lib/router';
+import { Access } from '~widgets/user-profile-card';
 
-type Params = {
-  slug: string;
-  params?: RequestParams;
+const createProfilePageModel = () => {
+  const routeOpened = createEvent<string | null>();
+  const pageUnmounted = createEvent();
+
+  const loaderFx = createLoaderEffect(async (args) => {
+    routeOpened(args.params?.username || null);
+    return null;
+  });
+
+  const $username = restore(routeOpened, null);
+  const $user = combine(
+    [$username, $$sessionModel.$visitor],
+    ([username, visitor]): Access => {
+      switch (true) {
+        case !visitor:
+          return { access: 'anonymous', username };
+
+        case visitor && visitor.username === username:
+          return { access: 'authorized', username };
+
+        case visitor && visitor.username !== username:
+          return { access: 'authenticated', username };
+
+        default:
+          throw new Error('Unexpected error');
+      }
+    },
+  );
+
+  return {
+    loaderFx,
+    pageUnmounted,
+  };
 };
 
-const articleGetFx = createEffect<Params, ArticleDto, GenericErrorModel>(
-  async ({ slug, params }) => {
-    const response = await realworldApi.articles.getArticle(slug, {
-      ...params,
-    });
-    return response.data.article;
-  },
-);
-
-const articleRequestFx = attach({ effect: articleGetFx });
-
-export const $article = createStore<ArticleDto | null>(null);
-export const $pending = articleRequestFx.pending;
-export const $error = createStore<GenericErrorModel | null>(null);
-const $slug = createStore<string | null>(null);
-
-export const articleRouteOpened = createEvent<Params>();
-
-$article.on(articleRequestFx.doneData, (_, article) => article);
-$error.on(articleRequestFx.failData, (_, error) => error);
-$slug.on(articleRouteOpened, (_, { slug }) => slug);
-
-sample({
-  clock: articleRouteOpened,
-  fn: ({ slug, params }) => ({ slug, params }),
-  target: articleRequestFx,
-});
+export const { loaderFx, ...$$profilePage } = createProfilePageModel();

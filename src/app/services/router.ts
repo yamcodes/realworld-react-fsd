@@ -24,7 +24,7 @@ const mainRouteModels = [
 ];
 
 export function createRouting() {
-  const initialize = createEvent();
+  const initialize = createEvent({ name: 'createRouting.initialize' });
 
   const $router = createStore<Router>(null as never);
 

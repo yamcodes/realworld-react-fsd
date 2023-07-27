@@ -2,7 +2,7 @@ import { createStore, sample, createEvent, createEffect } from 'effector';
 import { Api } from '~shared/api/realworld';
 
 export function createRestClient() {
-  const initialize = createEvent();
+  const initialize = createEvent({ name: 'restClient.initialize' });
 
   const $client = createStore<Api<string>>(null as never);
 

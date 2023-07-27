@@ -33,6 +33,18 @@ export function createQuery<Params, Done, Error>(
   const failure = createEvent<Error>({ name: name.concat('.failure') });
   const abort = createEvent({ name: name.concat('.abort') });
   const reset = createEvent({ name: name.concat('.reset') });
+  const settled = createEvent<
+    | {
+        status: 'done';
+        params: Params;
+        result: Done;
+      }
+    | {
+        status: 'fail';
+        params: Params;
+        error: Error;
+      }
+  >({ name: name.concat('.settled') });
 
   const $data = createStore<Done | null>(null, { name: name.concat('.$data') })
     .on(success, (_, data) => data)
@@ -72,6 +84,11 @@ export function createQuery<Params, Done, Error>(
   });
 
   sample({
+    clock: attachedFx.finally,
+    target: settled,
+  });
+
+  sample({
     clock: abort,
     source: $cancelToken,
     filter: Boolean,
@@ -83,6 +100,7 @@ export function createQuery<Params, Done, Error>(
     finished: {
       success,
       failure,
+      finally: settled,
     },
     abort,
     reset,

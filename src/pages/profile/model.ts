@@ -1,7 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 import { $$sessionModel } from '~entities/session';
 import { createLoaderEffect } from '~shared/lib/router';
-import { Access, createProfileCardModel } from '~widgets/profile-card';
+import { userProfileCardModel } from '~widgets/user-profile-card';
 
 const createProfilePageModel = () => {
   const routeOpened = createEvent<string | null>();
@@ -15,7 +15,7 @@ const createProfilePageModel = () => {
   const $username = restore(routeOpened, null);
   const $user = combine(
     [$username, $$sessionModel.$visitor],
-    ([username, visitor]): Access => {
+    ([username, visitor]): userProfileCardModel.Access => {
       switch (true) {
         case !visitor:
           return { access: 'anonymous', username };
@@ -32,18 +32,19 @@ const createProfilePageModel = () => {
     },
   );
 
-  const { load: loadProfileCard, ...$$profileCard } = createProfileCardModel();
+  const { load: loadProfileCard, ...$$userProfileCard } =
+    userProfileCardModel.createModel();
 
   sample({
     clock: routeOpened,
-    source: $user,
+    filter: Boolean,
     target: loadProfileCard,
   });
 
   return {
     loaderFx,
     pageUnmounted,
-    $$profileCard,
+    $$userProfileCard,
   };
 };
 

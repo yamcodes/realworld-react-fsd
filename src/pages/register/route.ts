@@ -5,7 +5,7 @@ import { loaderFx } from './model';
 
 const RegisterPage = Loadable(
   lazy(() =>
-    import('./RegisterPage').then((module) => ({
+    import('./ui').then((module) => ({
       default: module.RegisterPage,
     })),
   ),

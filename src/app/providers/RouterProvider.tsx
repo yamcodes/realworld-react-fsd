@@ -6,8 +6,6 @@ import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
 export function Router() {
   const ctx = useUnit($ctx);
 
-  console.log(ctx.router);
-
   return (
     <RouterProvider
       router={ctx.router}

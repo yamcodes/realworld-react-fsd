@@ -4,9 +4,7 @@ import { Loadable } from '~shared/ui/loadable';
 import { loaderFx } from './model';
 
 const LoginPage = Loadable(
-  lazy(() =>
-    import('./LoginPage').then((module) => ({ default: module.LoginPage })),
-  ),
+  lazy(() => import('./ui').then((module) => ({ default: module.LoginPage }))),
 );
 
 export const $$route = createRoute(

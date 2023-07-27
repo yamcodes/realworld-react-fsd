@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { InfiniteData } from '@tanstack/react-query';
 import { GenericErrorModel } from '~shared/api/realworld';
 import { ErrorHandler } from '~shared/ui/error-handler';
-import { Article } from '../../api/articleApi';
+import { Article } from '../../api';
 
 type ArticlesListProps = {
   isLoading: boolean;

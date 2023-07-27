@@ -1,7 +1,6 @@
 import { attach, createEvent, sample } from 'effector';
 import { string } from 'zod';
-import { $$sessionModel, sessionApi } from '~entities/session';
-import { createQuery } from '~shared/api/createQuery';
+import { sessionSignInModel } from '~features/session';
 import { $ctx } from '~shared/ctx';
 import { createFormModel } from '~shared/lib/form';
 
@@ -33,14 +32,11 @@ export function createLoginFormModel() {
     },
   });
 
-  const $$loginUserQuery = createQuery({
-    fx: sessionApi.loginUserFx,
-    name: 'loginUserQuery',
-  });
+  const $$sessionSignIn = sessionSignInModel.createModel();
 
   sample({
     clock: initialize,
-    target: [$$loginUserQuery.reset, $$loginForm.reset],
+    target: [$$sessionSignIn.reset, $$loginForm.reset],
   });
 
   sample({
@@ -51,30 +47,24 @@ export function createLoginFormModel() {
   sample({
     clock: $$loginForm.validated.success,
     source: $$loginForm.$form,
-    fn: (user) => ({ user, params: { cancelToken: 'loginUserQuery' } }),
-    target: $$loginUserQuery.start,
+    target: $$sessionSignIn.signin,
   });
 
-  sample({
-    clock: $$loginUserQuery.finished.success,
-    target: $$sessionModel.update,
-  });
+  // sample({
+  //   clock: $$sessionModel.update,
+  //   target: toHomeFx,
+  // });
 
-  sample({
-    clock: $$sessionModel.update,
-    target: toHomeFx,
-  });
-
-  sample({
-    clock: unmounted,
-    target: $$loginUserQuery.abort,
-  });
+  // sample({
+  //   clock: unmounted,
+  //   target: $$loginUserQuery.abort,
+  // });
 
   return {
     initialize,
     submitted,
     unmounted,
     fields: $$loginForm.fields,
-    $response: $$loginUserQuery.$response,
+    $$loginUserQuery,
   };
 }
