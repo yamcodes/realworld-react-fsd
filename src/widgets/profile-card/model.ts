@@ -54,6 +54,48 @@ function createFollowProfileModel() {
   };
 }
 
+export type UnfollowProfileModel = Omit<
+  ReturnType<typeof createUnfollowProfileModel>,
+  'initialize'
+>;
+
+function createUnfollowProfileModel() {
+  const initialize = createEvent<ProfileDto | null>();
+  const unfollowed = createEvent();
+
+  const $$unfollowProfileQuery = createQuery({
+    name: 'unfollowProfileQuery',
+    fx: profileApi.unfollowProfileFx,
+  });
+
+  const $profile = restore(initialize, null)
+    .on($$unfollowProfileQuery.start, (profile) => ({
+      ...profile!,
+      following: false,
+    }))
+    .on($$unfollowProfileQuery.finished.success, (_, profile) => profile)
+    .reset($$unfollowProfileQuery.finished.failure);
+
+  const $username = $profile.map((profile) => profile?.username);
+
+  sample({
+    clock: unfollowed,
+    source: $profile,
+    filter: Boolean,
+    fn: (profile) => ({
+      username: profile.username,
+      params: { cancelToken: 'getProfileQuery' },
+    }),
+    target: $$unfollowProfileQuery.start,
+  });
+
+  return {
+    initialize,
+    $username,
+    unfollowed,
+  };
+}
+
 export type Access = {
   access: 'anonymous' | 'authorized' | 'authenticated';
   username: string | null;
@@ -80,6 +122,7 @@ export function createProfileCardModel() {
   });
 
   const $$followProfile = createFollowProfileModel();
+  const $$unfollowProfile = createUnfollowProfileModel();
 
   const $profile = createStore<ProfileDto | null>(null).reset(load);
   const $user = restore(load, { access: 'anonymous', username: null });
@@ -101,7 +144,11 @@ export function createProfileCardModel() {
 
   sample({
     clock: $$getProfileQuery.finished.success,
-    target: [$profile, $$followProfile.initialize],
+    target: [
+      $profile,
+      $$followProfile.initialize,
+      $$unfollowProfile.initialize,
+    ],
   });
 
   sample({
@@ -113,7 +160,11 @@ export function createProfileCardModel() {
     // @ts-expect-error
     clock: loadVisitor,
     source: $$sessionModel.$visitor,
-    target: [$profile, $$followProfile.initialize],
+    target: [
+      $profile,
+      $$followProfile.initialize,
+      $$unfollowProfile.initialize,
+    ],
   });
 
   const followButtonClicked = createEvent();
@@ -129,13 +180,28 @@ export function createProfileCardModel() {
     target: navigateToLoginFx,
   });
 
+  const settingsButtonClicked = createEvent();
+
+  const navigateToSettingsFx = attach({
+    name: 'navigateToSettingsFx',
+    source: $ctx,
+    effect: (ctx) => ctx.router.navigate('/settings'),
+  });
+
+  sample({
+    clock: settingsButtonClicked,
+    target: navigateToSettingsFx,
+  });
+
   return {
     load,
     unmounted,
     followButtonClicked,
+    settingsButtonClicked,
     $user,
     $profile,
     $response: $$getProfileQuery.$response,
     $$followProfile,
+    $$unfollowProfile,
   };
 }

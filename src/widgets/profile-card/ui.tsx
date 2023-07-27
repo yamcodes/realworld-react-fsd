@@ -1,10 +1,14 @@
 import { ReactNode, useEffect } from 'react';
 import { useUnit } from 'effector-react';
-import { IoAdd } from 'react-icons/io5';
+import { IoAdd, IoRemove, IoSettingsSharp } from 'react-icons/io5';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { Spinner } from '~shared/ui/spinner';
-import { FollowProfileModel, ProfileCardModel } from './model';
+import {
+  FollowProfileModel,
+  ProfileCardModel,
+  UnfollowProfileModel,
+} from './model';
 
 type FollowProfileProps = {
   $$model: FollowProfileModel;
@@ -25,6 +29,24 @@ function FollowProfile(props: FollowProfileProps) {
     >
       <IoAdd size={16} />
       &nbsp; Follow {username}
+    </Button>
+  );
+}
+
+type UnfollowProfileProps = {
+  $$model: UnfollowProfileModel;
+};
+
+function UnfollowProfile(props: UnfollowProfileProps) {
+  const { $$model } = props;
+
+  const username = useUnit($$model.$username);
+  const unfollowed = useUnit($$model.unfollowed);
+
+  return (
+    <Button color="secondary" className="action-btn" onClick={unfollowed}>
+      <IoRemove size={16} />
+      &nbsp; Unfollow {username}
     </Button>
   );
 }
@@ -61,8 +83,10 @@ export function ProfileCard(props: ProfileCardProps) {
 
   const [profile, { access }] = useUnit([$$model.$profile, $$model.$user]);
   const { error, pending } = useUnit($$model.$response);
-  const unmounted = useUnit($$model.unmounted);
+
   const followButtonClicked = useUnit($$model.followButtonClicked);
+  const settingsButtonClicked = useUnit($$model.settingsButtonClicked);
+  const unmounted = useUnit($$model.unmounted);
 
   useEffect(() => unmounted, [unmounted]);
 
@@ -104,16 +128,11 @@ export function ProfileCard(props: ProfileCardProps) {
                 </Button>
               )}
 
-              <FollowProfile $$model={$$model.$$followProfile} />
-
-              {/* {access === 'authenticated' &&
+              {access === 'authenticated' &&
                 (profile.following ? (
-                  <UnfollowUserButton
-                    profile={profile}
-                    className="action-btn"
-                  />
+                  <UnfollowProfile $$model={$$model.$$unfollowProfile} />
                 ) : (
-                  <FollowUserButton profile={profile} className="action-btn" />
+                  <FollowProfile $$model={$$model.$$followProfile} />
                 ))}
 
               {access === 'authorized' && (
@@ -121,12 +140,12 @@ export function ProfileCard(props: ProfileCardProps) {
                   color="secondary"
                   variant="outline"
                   className="action-btn"
-                  onClick={() => navigate(PATH_PAGE.settings)}
+                  onClick={settingsButtonClicked}
                 >
                   <IoSettingsSharp size={14} />
                   &nbsp; Edit Profile Settings
                 </Button>
-              )} */}
+              )}
             </div>
           )}
         </div>

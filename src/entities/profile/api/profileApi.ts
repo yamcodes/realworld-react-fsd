@@ -27,3 +27,16 @@ export const followProfileFx = attach({
     return response.data.profile;
   },
 });
+
+type UnfollowProfileParams = { username: string; params?: RequestParams };
+
+export const unfollowProfileFx = attach({
+  source: $ctx,
+  effect: async (ctx, { username, params }: UnfollowProfileParams) => {
+    const response = await ctx.restClient.profiles.unfollowUserByUsername(
+      username,
+      params,
+    );
+    return response.data.profile;
+  },
+});
