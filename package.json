@@ -40,7 +40,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@effector/redux-devtools-adapter": "^0.1.5",
+    "@effector/redux-devtools-adapter": "^0.1.6",
     "@mswjs/data": "^0.13.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",

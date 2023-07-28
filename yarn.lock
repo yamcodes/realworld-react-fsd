@@ -247,10 +247,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@effector/redux-devtools-adapter@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@effector/redux-devtools-adapter/-/redux-devtools-adapter-0.1.5.tgz#0900675400014ceb0e682d3f8a6c3c44219905d3"
-  integrity sha512-2brQsZiaBJ/BvxZFYmF46E9JIprxNp3RRcYw9kVlhpplizVKtJS0BvAfQ7Bb7aVQFJ2cYmxWPG+gMP4viT+C0w==
+"@effector/redux-devtools-adapter@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@effector/redux-devtools-adapter/-/redux-devtools-adapter-0.1.6.tgz#e2608553aecf69f57fa1df680b02379aa0af2b23"
+  integrity sha512-JStkANiQ1MmYz15tWqEDCXBbTDTEoBaN4cv6uYmESsVrJXGyI77Vnu2IJoqF24hblvoXvYBC1Sz1i9iowkp2cQ==
 
 "@effector/reflect@^8.3.1":
   version "8.3.1"
