@@ -1,39 +1,38 @@
-import { attach, createEvent, sample } from 'effector';
+import { createEvent, sample } from 'effector';
 import { $$sessionModel } from '~entities/session';
 import { $ctx } from '~shared/ctx';
 import { createLoaderEffect } from '~shared/lib/router';
-import { createLoginFormModel } from '~widgets/login-form';
+import { signinFormModel } from '~widgets/sign-in-form';
 
-const createLoginPageModel = () => {
-  const routeOpened = createEvent();
-  const pageUnmounted = createEvent();
+const createModel = () => {
+  const opened = createEvent();
+  const unmounted = createEvent();
 
-  const toHomeFx = attach({
-    source: $ctx,
-    effect: (ctx) => ctx.router.navigate('/'),
-  });
+  // const toHomeFx = attach({
+  //   source: $ctx,
+  //   effect: (ctx) => ctx.router.navigate('/'),
+  // });
 
   const loaderFx = createLoaderEffect(async () => {
-    routeOpened();
+    opened();
     return null;
   });
 
-  const { initialize: initializeLoginForm, ...$$loginForm } =
-    createLoginFormModel();
+  const $$signinForm = signinFormModel.createModel();
+
+  // sample({
+  //   clock: opened,
+  //   source: $$sessionModel.$visitor,
+  //   filter: Boolean,
+  //   target: toHomeFx,
+  // });
 
   sample({
-    clock: routeOpened,
-    source: $$sessionModel.$visitor,
-    filter: Boolean,
-    target: toHomeFx,
+    clock: opened,
+    target: $$signinForm.init,
   });
 
-  sample({
-    clock: routeOpened,
-    target: initializeLoginForm,
-  });
-
-  return { loaderFx, pageUnmounted, $$loginForm };
+  return { loaderFx, unmounted, $$signinForm };
 };
 
-export const { loaderFx, ...$$loginPage } = createLoginPageModel();
+export const { loaderFx, ...$$loginPage } = createModel();
