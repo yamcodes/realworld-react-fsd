@@ -13,3 +13,11 @@ export interface Article {
   favoritesCount: number;
   author: Profile;
 }
+
+export type Query = {
+  tag?: string;
+  author?: string;
+  favorited?: string;
+  offset?: number;
+  limit?: number;
+};
