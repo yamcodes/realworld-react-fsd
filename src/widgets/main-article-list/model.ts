@@ -1,15 +1,27 @@
-// import { createEvent } from 'effector';
-// import { articleApi } from '~entities/article';
-// import { createQuery } from '~shared/api/createQuery';
+import { createQuery } from '@farfetched/core';
+import { createEvent, createStore, sample } from 'effector';
+import { Query, articleApi } from '~entities/article';
 
-// export function createModel() {
-//   const init = createEvent();
+export type MainArticleListModel = Omit<ReturnType<typeof createModel>, 'init'>;
 
-//   const $$articlesQuery = createQuery({
-//     name: 'articlesQuery',
-//     fx: articleApi.getArticlesFx,
-//     params: { query: { limit: 20, offset: 0 } },
-//   });
+export function createModel() {
+  const init = createEvent();
+  const unmounted = createEvent();
 
-//   return { init, $response: $$articlesQuery.$response };
-// }
+  const $query = createStore<{ query: Query }>({
+    query: { offset: 0, limit: 20 },
+  });
+
+  const articlesQuery = createQuery({
+    handler: articleApi.getArticlesFx,
+    name: 'articlesQuery',
+  });
+
+  sample({
+    clock: init,
+    source: $query,
+    target: articlesQuery.start,
+  });
+
+  return { init, unmounted, articlesQuery };
+}

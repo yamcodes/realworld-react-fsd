@@ -1,22 +1,23 @@
-import { tagApi } from '~entities/tag';
+import { useUnit } from 'effector-react';
 import { ErrorHandler } from '~shared/ui/error-handler';
+import { PopularTagsModel } from './model';
 
 type PopularTagsProps = {
-  onTagClick: (tag: string) => void;
+  $$model: PopularTagsModel;
 };
 
 export function PopularTags(props: PopularTagsProps) {
-  const { onTagClick } = props;
+  const { $$model } = props;
 
-  const { data: tags, isLoading, isError, error } = tagApi.useGlobalTags();
+  const { data: tags, pending, error } = useUnit($$model.popularTagsQuery);
 
   return (
     <div className="sidebar">
       <p>Popular Tags</p>
       <div className="tag-list">
-        {isLoading && 'Loading tags...'}
+        {pending && 'Loading tags...'}
 
-        {isError && <ErrorHandler error={error} />}
+        {(error as any) && <ErrorHandler error={error as any} />}
 
         {tags &&
           tags.length &&
@@ -25,9 +26,10 @@ export function PopularTags(props: PopularTagsProps) {
               key={tag}
               className="tag-pill tag-default"
               type="button"
-              onClick={() => {
-                onTagClick(tag);
-              }}
+              // TODO: Feature
+              // onClick={() => {
+              //   onTagClick(tag);
+              // }}
             >
               {tag}
             </button>

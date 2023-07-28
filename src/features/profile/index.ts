@@ -1,2 +1,2 @@
-export * from './follow';
-export * from './unfollow';
+export { followModel } from './follow';
+export { unfollowModel } from './unfollow';

@@ -1,1 +1,2 @@
-export { PopularTags } from './ui/popular-tags/PopularTags';
+export * as popularTagsModel from './model';
+export { PopularTags } from './ui';

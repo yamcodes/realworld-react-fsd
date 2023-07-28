@@ -13,12 +13,12 @@ import { $$registerRoute } from '~pages/register';
 import { $$settingsRoute } from '~pages/settings';
 
 const mainRouteModels = [
-  $$articleRoute,
-  $$editorRoute,
+  // $$articleRoute,
+  // $$editorRoute,
   $$homeRoute,
   $$loginRoute,
-  $$page404Route,
-  ...$$profileRoute,
+  // $$page404Route,
+  // ...$$profileRoute,
   $$registerRoute,
   $$settingsRoute,
 ];

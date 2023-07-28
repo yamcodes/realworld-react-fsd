@@ -1,32 +1,30 @@
-import { useState } from 'react';
-import cn from 'classnames';
-import { GlobalArticlesList } from '~widgets/global-articles-list';
+import { MainArticleList } from '~widgets/main-article-list';
 import { PopularTags } from '~widgets/popular-tags';
-import { UserArticlesList } from '~widgets/user-articles-list';
+import { $$homePage } from './model';
 
-type HomePageProps = {
-  auth?: boolean;
-};
+// type HomePageProps = {
+//   auth?: boolean;
+// };
 
-type TabsState = {
-  globalfeed?: boolean;
-  userfeed?: boolean;
-  tagfeed?: string;
-};
+// type TabsState = {
+//   globalfeed?: boolean;
+//   userfeed?: boolean;
+//   tagfeed?: string;
+// };
 
-export function HomePage(props: HomePageProps) {
-  const { auth } = props;
+export function HomePage() {
+  // const { auth } = props;
 
-  const initTabsState: TabsState = {
-    ...(auth && { userfeed: true }),
-    ...(!auth && { globalfeed: true }),
-  };
+  // const initTabsState: TabsState = {
+  //   ...(auth && { userfeed: true }),
+  //   ...(!auth && { globalfeed: true }),
+  // };
 
-  const [tabs, setTabs] = useState<TabsState>(initTabsState);
+  // const [tabs, setTabs] = useState<TabsState>(initTabsState);
 
-  const onUserfeedClick = () => setTabs({ userfeed: true });
-  const onGlobalfeedClick = () => setTabs({ globalfeed: true });
-  const onTabfeedClick = (tag: string) => setTabs({ tagfeed: tag });
+  // const onUserfeedClick = () => setTabs({ userfeed: true });
+  // const onGlobalfeedClick = () => setTabs({ globalfeed: true });
+  // const onTabfeedClick = (tag: string) => setTabs({ tagfeed: tag });
 
   return (
     <div className="home-page">
@@ -40,7 +38,8 @@ export function HomePage(props: HomePageProps) {
       <div className="container page">
         <div className="row">
           <div className="col-md-9">
-            <div className="feed-toggle">
+            <MainArticleList $$model={$$homePage.$$mainArticleList} />
+            {/* <div className="feed-toggle">
               <ul className="nav nav-pills outline-active">
                 {auth && (
                   <li className="nav-item">
@@ -88,10 +87,11 @@ export function HomePage(props: HomePageProps) {
                 query={{ limit: 10, offset: 0, tag: tabs.tagfeed }}
               />
             )}
+          */}
           </div>
 
           <div className="col-md-3">
-            <PopularTags onTagClick={onTabfeedClick} />
+            <PopularTags $$model={$$homePage.$$popularTags} />
           </div>
         </div>
       </div>
