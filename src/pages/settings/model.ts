@@ -1,25 +1,24 @@
 import { createEvent, sample } from 'effector';
 import { createLoaderEffect } from '~shared/lib/router';
-import { createUserSettingsFormModel } from '~widgets/user-settings-form';
+import { userSettingsFormModel } from '~widgets/user-settings-form';
 
-function createSettingsPageModel() {
-  const routeOpened = createEvent();
-  const pageUnmounted = createEvent();
+function createModel() {
+  const opened = createEvent();
+  const unmounted = createEvent();
 
   const loaderFx = createLoaderEffect(async () => {
-    routeOpened();
+    opened();
     return null;
   });
 
-  const { initialize: initializeSettingsForm, ...$$settingsForm } =
-    createUserSettingsFormModel();
+  const $$userSettingsForm = userSettingsFormModel.createModel();
 
   sample({
-    clock: routeOpened,
-    target: initializeSettingsForm,
+    clock: opened,
+    target: $$userSettingsForm.init,
   });
 
-  return { loaderFx, pageUnmounted, $$settingsForm };
+  return { loaderFx, unmounted, $$userSettingsForm };
 }
 
-export const { loaderFx, ...$$settingsPage } = createSettingsPageModel();
+export const { loaderFx, ...$$settingsPage } = createModel();

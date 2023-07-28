@@ -13,7 +13,7 @@ export function SettingsPage() {
           <div className="col-md-6 offset-md-3 col-xs-12">
             <h1 className="text-xs-center">Your Settings</h1>
 
-            <UserSettingsForm $$model={$$settingsPage.$$settingsForm} />
+            <UserSettingsForm $$model={$$settingsPage.$$userSettingsForm} />
 
             <hr />
 

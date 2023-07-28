@@ -1,20 +1,19 @@
 import { createEvent, sample } from 'effector';
 import { string } from 'zod';
-import { $$sessionModel, sessionApi } from '~entities/session';
-import { createQuery } from '~shared/api/createQuery';
+import { sessionUpdateModel } from '~features/session';
 import { createFormModel } from '~shared/lib/form';
 
 export type UserSettingsFormModel = Omit<
-  ReturnType<typeof createUserSettingsFormModel>,
-  'initialize'
+  ReturnType<typeof createModel>,
+  'init'
 >;
 
-export function createUserSettingsFormModel() {
-  const initialize = createEvent();
+export function createModel() {
+  const init = createEvent();
   const submitted = createEvent();
   const unmounted = createEvent();
 
-  const $$settingsForm = createFormModel({
+  const $$userSettingsForm = createFormModel({
     fields: {
       image: {
         initialValue: '',
@@ -39,43 +38,39 @@ export function createUserSettingsFormModel() {
     },
   });
 
-  const $$updateUserQuery = createQuery({
-    fx: sessionApi.updateUserFx,
-    name: 'updateUserQuery',
-  });
+  const $$sessionUpdate = sessionUpdateModel.createModel();
 
   sample({
-    clock: initialize,
-    target: [$$updateUserQuery.reset, $$settingsForm.reset],
+    clock: init,
+    target: [$$sessionUpdate.reset, $$userSettingsForm.reset],
   });
 
   sample({
     clock: submitted,
-    target: $$settingsForm.validate,
+    target: $$userSettingsForm.validate,
   });
 
   sample({
-    clock: $$settingsForm.validated.success,
-    source: $$settingsForm.$form,
-    fn: (user) => ({ user, params: { cancelToken: 'updateUserQuery' } }),
-    target: $$updateUserQuery.start,
+    clock: $$userSettingsForm.validated.success,
+    source: $$userSettingsForm.$form,
+    target: $$sessionUpdate.update,
   });
 
-  sample({
-    clock: $$updateUserQuery.finished.success,
-    target: $$sessionModel.update,
-  });
+  // sample({
+  //   clock: $$sessionModel.update,
+  //   target: toHomeFx,
+  // });
 
-  sample({
-    clock: unmounted,
-    target: $$updateUserQuery.abort,
-  });
+  // sample({
+  //   clock: unmounted,
+  //   target: $$sessionUpdate.abort,
+  // });
 
   return {
-    initialize,
+    init,
     submitted,
     unmounted,
-    fields: $$settingsForm.fields,
-    $response: $$updateUserQuery.$response,
+    fields: $$userSettingsForm.fields,
+    $$sessionUpdate,
   };
 }

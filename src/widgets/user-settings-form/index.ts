@@ -1,2 +1,2 @@
+export * as userSettingsFormModel from './model';
 export { UserSettingsForm } from './ui';
-export { createUserSettingsFormModel } from './model';
