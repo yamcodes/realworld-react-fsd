@@ -1,4 +1,4 @@
-import { RegisterForm } from '~widgets/register-form';
+import { SignupForm } from '~widgets/sign-up-form';
 import { $$registerPage } from './model';
 
 export function RegisterPage() {
@@ -7,7 +7,7 @@ export function RegisterPage() {
       <div className="container page">
         <div className="row">
           <div className="col-md-6 offset-md-3 col-xs-12">
-            <RegisterForm $$model={$$registerPage.$$registerForm} />
+            <SignupForm $$model={$$registerPage.$$signupForm} />
           </div>
         </div>
       </div>

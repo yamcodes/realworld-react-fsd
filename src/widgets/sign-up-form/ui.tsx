@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FormFieldModel } from '~shared/lib/form';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { ErrorHandler } from '~shared/ui/error-handler';
-import { RegisterFormModel } from './model';
+import { SignupFormModel } from './model';
 
 type FieldType = {
   $$model: FormFieldModel<string>;
@@ -78,13 +78,17 @@ function PasswordField(props: FieldType) {
   );
 }
 
-type RegisterFormProps = {
-  $$model: RegisterFormModel;
+type SignupFormProps = {
+  $$model: SignupFormModel;
 };
 
-export function RegisterForm(props: RegisterFormProps) {
+export function SignupForm(props: SignupFormProps) {
   const { $$model } = props;
-  const { error, pending } = useUnit($$model.$response);
+
+  const [error, pending] = useUnit([
+    $$model.$$sessionSignUp.$error,
+    $$model.$$sessionSignUp.$pending,
+  ]);
   const [submited, unmounted] = useUnit([$$model.submitted, $$model.unmounted]);
 
   const onFormSubmit: FormEventHandler = (e) => {

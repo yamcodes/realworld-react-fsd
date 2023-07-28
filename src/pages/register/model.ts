@@ -1,25 +1,24 @@
 import { createEvent, sample } from 'effector';
 import { createLoaderEffect } from '~shared/lib/router';
-import { createRegisterFormModel } from '~widgets/register-form';
+import { signupFormModel } from '~widgets/sign-up-form';
 
-const createRegisterPageModel = () => {
-  const routeOpened = createEvent();
-  const pageUnmounted = createEvent();
+const createModel = () => {
+  const opened = createEvent();
+  const unmounted = createEvent();
 
   const loaderFx = createLoaderEffect(async () => {
-    routeOpened();
+    opened();
     return null;
   });
 
-  const { initialize: initializeRegisterForm, ...$$registerForm } =
-    createRegisterFormModel();
+  const $$signupForm = signupFormModel.createModel();
 
   sample({
-    clock: routeOpened,
-    target: initializeRegisterForm,
+    clock: opened,
+    target: $$signupForm.init,
   });
 
-  return { loaderFx, pageUnmounted, $$registerForm };
+  return { loaderFx, unmounted, $$signupForm };
 };
 
-export const { loaderFx, ...$$registerPage } = createRegisterPageModel();
+export const { loaderFx, ...$$registerPage } = createModel();
