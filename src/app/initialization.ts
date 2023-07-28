@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { attachReduxDevTools } from '@effector/redux-devtools-adapter';
 import { allSettled, fork, combine, sample } from 'effector';
-import { sessionInitModel } from '~features/session';
+import { $$sessionModel } from '~entities/session';
 import { $ctx } from '~shared/ctx';
 import {
   createRestClient,
@@ -24,12 +24,10 @@ async function init() {
     router: $$routing.$router,
   });
 
-  const $$sessionInit = sessionInitModel.createModel();
-
   const initializers = [
     $$tokenStorage.initialize,
     $$restClient.initialize,
-    $$sessionInit.initialize,
+    $$sessionModel.init,
     $$routing.initialize,
   ];
 

@@ -29,12 +29,10 @@ export const loginUserFx = attach({
   },
 });
 
-type CurrentUserParams = { params?: RequestParams };
-
 export const currentUserFx = attach({
   name: 'currentUserFx',
   source: $ctx,
-  effect: async (ctx, { params }: CurrentUserParams) => {
+  effect: async (ctx, params?: RequestParams) => {
     const response = await ctx.restClient.user.getCurrentUser(params);
     return response.data.user;
   },
