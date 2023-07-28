@@ -4,28 +4,29 @@ import { $$sessionModel, sessionApi } from '~entities/session';
 import { LoginUserDto } from '~shared/api/realworld';
 
 export function createModel() {
-  const signin = createEvent<LoginUserDto>();
+  const signin = createEvent<LoginUserDto>({ name: 'session.signin' });
 
-  const $$loginUserQuery = createQuery({
+  const $$signinQuery = createQuery({
     handler: sessionApi.loginUserFx,
+    name: 'session.signinQuery',
   });
 
   sample({
     clock: signin,
     fn: (user) => ({ user }),
-    target: $$loginUserQuery.start,
+    target: $$signinQuery.start,
   });
 
   sample({
-    clock: $$loginUserQuery.finished.success,
+    clock: $$signinQuery.finished.success,
     fn: (data) => data.result,
     target: $$sessionModel.update,
   });
 
   return {
     signin,
-    reset: $$loginUserQuery.reset,
-    $pending: $$loginUserQuery.$pending,
-    $error: $$loginUserQuery.$error,
+    reset: $$signinQuery.reset,
+    $pending: $$signinQuery.$pending,
+    $error: $$signinQuery.$error,
   };
 }
