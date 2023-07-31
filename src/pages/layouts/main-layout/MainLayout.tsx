@@ -14,26 +14,26 @@ export function MainLayout() {
           <NavLink className="navbar-brand" to={PATH_PAGE.root}>
             conduit
           </NavLink>
-          {/* {!user && ( */}
-          <ul className="nav navbar-nav pull-xs-right">
-            <li className="nav-item">
-              <NavLink className="nav-link" to={PATH_PAGE.root}>
-                Home
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to={PATH_PAGE.login}>
-                Sign in
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to={PATH_PAGE.register}>
-                Sign up
-              </NavLink>
-            </li>
-          </ul>
-          {/* )} */}
-          {/* {user && (
+          {!user && (
+            <ul className="nav navbar-nav pull-xs-right">
+              <li className="nav-item">
+                <NavLink className="nav-link" to={PATH_PAGE.root}>
+                  Home
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to={PATH_PAGE.login}>
+                  Sign in
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to={PATH_PAGE.register}>
+                  Sign up
+                </NavLink>
+              </li>
+            </ul>
+          )}
+          {user && (
             <ul className="nav navbar-nav pull-xs-right">
               <li className="nav-item">
                 <NavLink className="nav-link" to={PATH_PAGE.root}>
@@ -66,7 +66,7 @@ export function MainLayout() {
                 </NavLink>
               </li>
             </ul>
-          )} */}
+          )}
         </div>
       </nav>
       <Outlet />

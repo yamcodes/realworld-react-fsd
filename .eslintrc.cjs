@@ -97,6 +97,7 @@ module.exports = {
       plugins: ['@typescript-eslint/eslint-plugin', 'effector'],
       rules: {
         '@typescript-eslint/indent': 'off',
+        '@typescript-eslint/no-use-before-define': 'off',
         'import/no-extraneous-dependencies': [
           'error',
           {

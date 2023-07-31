@@ -6,6 +6,7 @@ import {
   UpdateUserDto,
 } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
+import { mapUser } from './lib';
 
 type CreateUserParams = { user: NewUserDto; params?: RequestParams };
 
@@ -14,7 +15,7 @@ export const createUserFx = attach({
   source: $ctx,
   effect: async (ctx, { user, params }: CreateUserParams) => {
     const response = await ctx.restClient.users.createUser({ user }, params);
-    return response.data.user;
+    return mapUser(response.data.user);
   },
 });
 
@@ -25,7 +26,7 @@ export const loginUserFx = attach({
   source: $ctx,
   effect: async (ctx, { user, params }: LoginUserParams) => {
     const response = await ctx.restClient.users.login({ user }, params);
-    return response.data.user;
+    return mapUser(response.data.user);
   },
 });
 
@@ -34,7 +35,7 @@ export const currentUserFx = attach({
   source: $ctx,
   effect: async (ctx, params?: RequestParams) => {
     const response = await ctx.restClient.user.getCurrentUser(params);
-    return response.data.user;
+    return mapUser(response.data.user);
   },
 });
 
@@ -48,6 +49,6 @@ export const updateUserFx = attach({
       { user },
       params,
     );
-    return response.data.user;
+    return mapUser(response.data.user);
   },
 });

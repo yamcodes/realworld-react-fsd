@@ -1,15 +1,17 @@
-import { createEvent, restore, sample } from 'effector';
+import { createQuery } from '@farfetched/core';
+import { Store, createEvent, sample } from 'effector';
 import { Profile, profileApi } from '~entities/profile';
-import { createQuery } from '~shared/api/createQuery';
 
-export type UnfollowProfileModel = Omit<
-  ReturnType<typeof createModel>,
-  'initialize'
->;
+export type UnfollowProfileModel = ReturnType<typeof createModel>;
 
-export function createModel() {
-  const initialize = createEvent<Profile>();
-  const unfollowed = createEvent();
+type UnfollowProfileConfig = {
+  $profile: Store<Profile | null>;
+};
+
+export function createModel(config: UnfollowProfileConfig) {
+  const { $profile } = config;
+
+  const unfollow = createEvent();
 
   const optimisticallyUpdate = createEvent<Profile>();
   const rollbackUpdate = createEvent<Profile>();
@@ -17,25 +19,16 @@ export function createModel() {
 
   const $$unfollowProfileQuery = createQuery({
     name: 'unfollowProfileQuery',
-    fx: profileApi.unfollowProfileFx,
+    handler: profileApi.unfollowProfileFx,
   });
-
-  const $profile = restore(initialize, null)
-    .on(unfollowed, (profile) =>
-      profile ? { ...profile, following: false } : null,
-    )
-    .on($$unfollowProfileQuery.finished.success, (_, profile) => profile)
-    .reset($$unfollowProfileQuery.finished.failure);
 
   const $username = $profile.map((profile) => profile?.username);
 
   sample({
-    clock: unfollowed,
-    source: $profile,
+    clock: unfollow,
+    source: $username,
     filter: Boolean,
-    fn: (profile) => ({
-      username: profile.username,
-    }),
+    fn: (username) => ({ username }),
     target: $$unfollowProfileQuery.start,
   });
 
@@ -43,6 +36,7 @@ export function createModel() {
     clock: $$unfollowProfileQuery.start,
     source: $profile,
     filter: Boolean,
+    fn: (profile) => ({ ...profile, following: false }),
     target: optimisticallyUpdate,
   });
 
@@ -50,6 +44,7 @@ export function createModel() {
     clock: $$unfollowProfileQuery.finished.failure,
     source: $profile,
     filter: Boolean,
+    fn: (profile) => ({ ...profile, following: true }),
     target: rollbackUpdate,
   });
 
@@ -59,11 +54,11 @@ export function createModel() {
   });
 
   return {
-    initialize,
     optimisticallyUpdate,
     rollbackUpdate,
     updateSettled,
+    unfollow,
     $username,
-    unfollowed,
+    reset: $$unfollowProfileQuery.reset,
   };
 }

@@ -1,15 +1,17 @@
-import { createEvent, restore, sample } from 'effector';
+import { createQuery } from '@farfetched/core';
+import { Store, createEvent, sample } from 'effector';
 import { Profile, profileApi } from '~entities/profile';
-import { createQuery } from '~shared/api/createQuery';
 
-export type FollowProfileModel = Omit<
-  ReturnType<typeof createModel>,
-  'initialize'
->;
+export type FollowProfileModel = ReturnType<typeof createModel>;
 
-export function createModel() {
-  const initialize = createEvent<Profile>();
-  const followed = createEvent();
+type FollowProfileConfig = {
+  $profile: Store<Profile | null>;
+};
+
+export function createModel(config: FollowProfileConfig) {
+  const { $profile } = config;
+
+  const follow = createEvent();
 
   const optimisticallyUpdate = createEvent<Profile>();
   const rollbackUpdate = createEvent<Profile>();
@@ -17,25 +19,16 @@ export function createModel() {
 
   const $$followProfileQuery = createQuery({
     name: 'followProfileQuery',
-    fx: profileApi.followProfileFx,
+    handler: profileApi.followProfileFx,
   });
-
-  const $profile = restore(initialize, null)
-    .on(followed, (profile) =>
-      profile ? { ...profile, following: true } : null,
-    )
-    .on($$followProfileQuery.finished.success, (_, profile) => profile)
-    .reset($$followProfileQuery.finished.failure);
 
   const $username = $profile.map((profile) => profile?.username);
 
   sample({
-    clock: followed,
-    source: $profile,
+    clock: follow,
+    source: $username,
     filter: Boolean,
-    fn: (profile) => ({
-      username: profile.username,
-    }),
+    fn: (username) => ({ username }),
     target: $$followProfileQuery.start,
   });
 
@@ -43,6 +36,7 @@ export function createModel() {
     clock: $$followProfileQuery.start,
     source: $profile,
     filter: Boolean,
+    fn: (profile) => ({ ...profile, following: true }),
     target: optimisticallyUpdate,
   });
 
@@ -50,6 +44,7 @@ export function createModel() {
     clock: $$followProfileQuery.finished.failure,
     source: $profile,
     filter: Boolean,
+    fn: (profile) => ({ ...profile, following: false }),
     target: rollbackUpdate,
   });
 
@@ -59,11 +54,11 @@ export function createModel() {
   });
 
   return {
-    initialize,
     optimisticallyUpdate,
     rollbackUpdate,
     updateSettled,
+    follow,
+    reset: $$followProfileQuery.reset,
     $username,
-    followed,
   };
 }

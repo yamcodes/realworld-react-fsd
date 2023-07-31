@@ -5,15 +5,15 @@ import {
   createStore,
   sample,
 } from 'effector';
-import { UserDto } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
 import { currentUserFx } from './api';
+import { User } from './types';
 
 const name = 'session';
 
 function createSessionModel() {
   const init = createEvent({ name: name.concat('.init') });
-  const update = createEvent<UserDto>({ name: name.concat('.update') });
+  const update = createEvent<User>({ name: name.concat('.update') });
   const clear = createEvent({ name: name.concat('.clear') });
 
   const requestCurrentUserFx = createEffect({
@@ -52,7 +52,7 @@ function createSessionModel() {
     },
   });
 
-  const $visitor = createStore<UserDto | null>(null, {
+  const $visitor = createStore<User | null>(null, {
     name: name.concat('.$visitor'),
   })
     .on(initFx.doneData, (_, user) => user)

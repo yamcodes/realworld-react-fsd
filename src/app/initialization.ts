@@ -41,7 +41,6 @@ async function init() {
   attachReduxDevTools({
     name: 'Effector DevTools',
     scope,
-    trace: true,
   });
 
   // eslint-disable-next-line no-restricted-syntax

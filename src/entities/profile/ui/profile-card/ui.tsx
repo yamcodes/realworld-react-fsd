@@ -1,18 +1,17 @@
 import { ReactNode } from 'react';
-import { useUnit } from 'effector-react';
-import { ProfileModel } from '../../model';
+import { Profile } from '../../types';
 
 type NewType = {
-  $$model: ProfileModel;
+  profile: Profile;
   actions?: ReactNode;
 };
 
 type ProfileCardProps = NewType;
 
 export function ProfileCard(props: ProfileCardProps) {
-  const { $$model, actions } = props;
+  const { profile, actions } = props;
 
-  const { username, image, bio } = useUnit($$model.$profile);
+  const { username, image, bio } = profile;
 
   return (
     <div className="col-xs-12 col-md-10 offset-md-1">

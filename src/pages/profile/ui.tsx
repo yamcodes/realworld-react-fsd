@@ -1,11 +1,28 @@
 import cn from 'classnames';
-import { UserProfileCard } from '~widgets/user-profile-card';
+import { useUnit } from 'effector-react';
+import {
+  ProfileInfoAnon,
+  ProfileInfoAuth,
+  ProfileInfoVisitor,
+} from '~widgets/profile-info';
 import { $$profilePage } from './model';
 
 export function ProfilePage() {
+  const context = useUnit($$profilePage.$context);
+
   return (
     <div className="profile-page">
-      <UserProfileCard $$model={$$profilePage.$$userProfileCard} />
+      {context === 'auth' && (
+        <ProfileInfoAuth $$model={$$profilePage.$$profileInfoModel.auth} />
+      )}
+      {context === 'visitor' && (
+        <ProfileInfoVisitor
+          $$model={$$profilePage.$$profileInfoModel.visitor}
+        />
+      )}
+      {context === 'anon' && (
+        <ProfileInfoAnon $$model={$$profilePage.$$profileInfoModel.anon} />
+      )}
 
       <div className="container">
         <div className="row">
