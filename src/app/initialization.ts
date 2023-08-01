@@ -9,7 +9,7 @@ import {
   createTokenStorage,
 } from './services';
 
-async function init() {
+export async function init() {
   const $$tokenStorage = createTokenStorage({
     storage: localStorage,
     tokenKey: 'testsession',
@@ -50,5 +50,3 @@ async function init() {
 
   return { scope };
 }
-
-export const { scope } = await init();
