@@ -1,3 +1,4 @@
+import { ReactNode, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { IoHeart } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
@@ -13,20 +14,39 @@ type MainArticleListProps = {
 export function MainArticleList(props: MainArticleListProps) {
   const { $$model } = props;
 
-  const { data: articles, pending, error } = useUnit($$model.articlesQuery);
+  const [
+    articles,
+    pendingInitial,
+    pendingNextPage,
+    error,
+    emptyData,
+    canFetchMore,
+  ] = useUnit([
+    $$model.$articles,
+    $$model.$pendingInitial,
+    $$model.$pendingNextPage,
+    $$model.$error,
+    $$model.$emptyData,
+    $$model.$canFetchMore,
+  ]);
+
+  const unmounted = useUnit($$model.unmounted);
+  const loadMore = useUnit($$model.$$pagination.nextPage);
+
+  useEffect(() => unmounted, [unmounted]);
 
   return (
     <>
-      {pending && <div className="article-preview">Loading articles...</div>}
+      {pendingInitial && <ArticleWrapper>Loading articles...</ArticleWrapper>}
 
       {error && (
-        <div className="article-preview">
+        <ArticleWrapper>
           <ErrorHandler error={error as any} />
-        </div>
+        </ArticleWrapper>
       )}
 
-      {articles?.length === 0 && (
-        <div className="article-preview">No articles are here... yet.</div>
+      {emptyData && (
+        <ArticleWrapper>No articles are here... yet.</ArticleWrapper>
       )}
 
       {articles &&
@@ -69,6 +89,29 @@ export function MainArticleList(props: MainArticleListProps) {
             </div>
           ),
         )}
+
+      {canFetchMore && (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Button
+            color="primary"
+            variant="outline"
+            onClick={loadMore}
+            disabled={pendingNextPage}
+          >
+            {pendingNextPage ? 'Loading more...' : 'Load More'}
+          </Button>
+        </div>
+      )}
     </>
   );
+}
+
+type ArticleWrapperProps = {
+  children: ReactNode;
+};
+
+function ArticleWrapper(props: ArticleWrapperProps) {
+  const { children } = props;
+
+  return <div className="article-preview">{children}</div>;
 }

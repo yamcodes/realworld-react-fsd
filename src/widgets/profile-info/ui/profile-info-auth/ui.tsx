@@ -13,11 +13,7 @@ type ProfileInfoAuthProps = {
 export function ProfileInfoAuth(props: ProfileInfoAuthProps) {
   const { $$model } = props;
 
-  const [profile, pending, error] = useUnit([
-    $$model.$profile,
-    $$model.$pending,
-    $$model.$error,
-  ]);
+  const { data: profile, pending, error } = useUnit($$model.profileQuery);
 
   const unmounted = useUnit($$model.unmounted);
 

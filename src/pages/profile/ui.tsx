@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
+import { MainArticleList } from '~widgets/main-article-list';
 import {
   ProfileInfoAnon,
   ProfileInfoAuth,
@@ -10,18 +11,22 @@ import { $$profilePage } from './model';
 export function ProfilePage() {
   const context = useUnit($$profilePage.$context);
 
+  const filterBy = useUnit(
+    $$profilePage.$$mainArticleList.$$filterQuery.filterBy,
+  );
+
+  const username = useUnit($$profilePage.$username);
+
   return (
     <div className="profile-page">
       {context === 'auth' && (
-        <ProfileInfoAuth $$model={$$profilePage.$$profileInfoModel.auth} />
+        <ProfileInfoAuth $$model={$$profilePage.$$profileInfo.auth} />
       )}
       {context === 'visitor' && (
-        <ProfileInfoVisitor
-          $$model={$$profilePage.$$profileInfoModel.visitor}
-        />
+        <ProfileInfoVisitor $$model={$$profilePage.$$profileInfo.visitor} />
       )}
       {context === 'anon' && (
-        <ProfileInfoAnon $$model={$$profilePage.$$profileInfoModel.anon} />
+        <ProfileInfoAnon $$model={$$profilePage.$$profileInfo.anon} />
       )}
 
       <div className="container">
@@ -30,17 +35,27 @@ export function ProfilePage() {
             <div className="articles-toggle">
               <ul className="nav nav-pills outline-active">
                 <li className="nav-item">
-                  <button className={cn('nav-link')} type="button">
+                  <button
+                    className={cn('nav-link')}
+                    type="button"
+                    onClick={() => filterBy.author(username!)}
+                  >
                     My Articles
                   </button>
                 </li>
                 <li className="nav-item">
-                  <button className={cn('nav-link active')} type="button">
+                  <button
+                    className={cn('nav-link active')}
+                    type="button"
+                    onClick={() => filterBy.authorFavorites(username!)}
+                  >
                     Favorited Articles
                   </button>
                 </li>
               </ul>
             </div>
+
+            <MainArticleList $$model={$$profilePage.$$mainArticleList} />
 
             {/* {tabs.author && (
               <GlobalArticlesList

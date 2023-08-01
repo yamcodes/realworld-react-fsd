@@ -17,9 +17,9 @@ export function createAnonModel(config: ProfileInfoAnonConfig) {
   const reset = createEvent();
   const navigateToLogin = createEvent();
 
-  const $$getProfileQuery = createQuery({
+  const $$profileQuery = createQuery({
     handler: profileApi.getProfileFx,
-    name: 'getProfileQuery',
+    name: 'profileQuery',
   });
 
   const $$navigateToLogin = createNavigateMobel({ path: '/login' });
@@ -29,7 +29,7 @@ export function createAnonModel(config: ProfileInfoAnonConfig) {
     source: $username,
     filter: Boolean,
     fn: (username) => ({ username }),
-    target: $$getProfileQuery.start,
+    target: $$profileQuery.start,
   });
 
   sample({
@@ -39,7 +39,7 @@ export function createAnonModel(config: ProfileInfoAnonConfig) {
 
   sample({
     clock: reset,
-    target: $$getProfileQuery.reset,
+    target: $$profileQuery.reset,
   });
 
   sample({
@@ -51,8 +51,8 @@ export function createAnonModel(config: ProfileInfoAnonConfig) {
     init,
     unmounted,
     navigateToLogin,
-    $profile: $$getProfileQuery.$data,
-    $pending: $$getProfileQuery.$pending,
-    $error: $$getProfileQuery.$error,
+    $profile: $$profileQuery.$data,
+    $pending: $$profileQuery.$pending,
+    $error: $$profileQuery.$error,
   };
 }

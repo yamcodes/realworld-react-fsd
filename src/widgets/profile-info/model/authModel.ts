@@ -1,6 +1,6 @@
-import { createQuery } from '@farfetched/core';
-import { Store, createEvent, createStore, sample } from 'effector';
-import { profileApi, Profile } from '~entities/profile';
+import { createQuery, update } from '@farfetched/core';
+import { Store, createEvent, sample } from 'effector';
+import { profileApi } from '~entities/profile';
 import { followModel, unfollowModel } from '~features/profile';
 
 export type ProfileInfoAuthModel = ReturnType<typeof createAuthModel>;
@@ -16,51 +16,62 @@ export function createAuthModel(config: ProfileInfoAuthConfig) {
   const unmounted = createEvent();
   const reset = createEvent();
 
-  const $$getProfileQuery = createQuery({
+  const profileQuery = createQuery({
     handler: profileApi.getProfileFx,
-    name: 'getProfileQuery',
+    name: 'profileQuery',
   });
 
-  const $profile = createStore<Profile | null>(null).reset(reset);
-
-  const $$followProfile = followModel.createModel({ $profile });
-  const $$unfollowProfile = unfollowModel.createModel({ $profile });
+  const $$followProfile = followModel.createModel({
+    $profile: profileQuery.$data,
+  });
+  const $$unfollowProfile = unfollowModel.createModel({
+    $profile: profileQuery.$data,
+  });
 
   sample({
-    clock: [
-      init,
-      // $$followProfile.updateSettled,
-      // $$unfollowProfile.updateSettled,
-    ],
+    clock: init,
     source: $username,
     filter: Boolean,
     fn: (username) => ({ username, params: { secure: true } }),
-    target: $$getProfileQuery.start,
+    target: profileQuery.start,
   });
 
-  sample({
-    clock: $$getProfileQuery.finished.success,
-    fn: (data) => data.result,
-    target: $profile,
+  update(profileQuery, {
+    on: $$followProfile.followProfileMutation,
+    by: {
+      success: ({ mutation }) => ({
+        result: mutation.result,
+      }),
+      failure: ({ mutation }) => ({
+        error: mutation.error,
+      }),
+    },
+  });
+
+  update(profileQuery, {
+    on: $$unfollowProfile.unfollowProfileMutation,
+    by: {
+      success: ({ mutation }) => ({
+        result: mutation.result,
+        // refetch: true,
+      }),
+      failure: ({ mutation }) => ({
+        error: mutation.error,
+      }),
+    },
   });
 
   sample({
     clock: [
       $$followProfile.optimisticallyUpdate,
-      $$followProfile.rollbackUpdate,
       $$unfollowProfile.optimisticallyUpdate,
-      $$unfollowProfile.rollbackUpdate,
     ],
-    target: $profile,
+    target: profileQuery.$data,
   });
 
   sample({
     clock: reset,
-    target: [
-      $$getProfileQuery.reset,
-      $$followProfile.reset,
-      $$unfollowProfile.reset,
-    ],
+    target: profileQuery.reset,
   });
 
   sample({
@@ -73,8 +84,6 @@ export function createAuthModel(config: ProfileInfoAuthConfig) {
     unmounted,
     $$followProfile,
     $$unfollowProfile,
-    $profile,
-    $pending: $$getProfileQuery.$pending,
-    $error: $$getProfileQuery.$error,
+    profileQuery,
   };
 }

@@ -1,6 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 import { $$sessionModel, User } from '~entities/session';
 import { createLoaderEffect } from '~shared/lib/router';
+import { mainArticleListModel } from '~widgets/main-article-list';
 import { profileInfoModel } from '~widgets/profile-info';
 
 const createModel = () => {
@@ -30,7 +31,7 @@ const createModel = () => {
     },
   );
 
-  const $$profileInfoModel = {
+  const $$profileInfo = {
     auth: profileInfoModel.createAuthModel({ $username }),
     visitor: profileInfoModel.createVisitorModel(),
     anon: profileInfoModel.createAnonModel({ $username }),
@@ -40,28 +41,37 @@ const createModel = () => {
     clock: opened,
     source: $context,
     filter: (context) => context === 'auth',
-    target: $$profileInfoModel.auth.init,
+    target: $$profileInfo.auth.init,
   });
 
   sample({
     clock: opened,
     source: $context,
     filter: (context) => context === 'visitor',
-    target: $$profileInfoModel.visitor.init,
+    target: $$profileInfo.visitor.init,
   });
 
   sample({
     clock: opened,
     source: $context,
     filter: (context) => context === 'anon',
-    target: $$profileInfoModel.anon.init,
+    target: $$profileInfo.anon.init,
+  });
+
+  const $$mainArticleList = mainArticleListModel.createModel();
+
+  sample({
+    clock: opened,
+    target: $$mainArticleList.init,
   });
 
   return {
     loaderFx,
     unmounted,
+    $username,
     $context,
-    $$profileInfoModel,
+    $$profileInfo,
+    $$mainArticleList,
   };
 };
 

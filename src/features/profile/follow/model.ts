@@ -1,4 +1,4 @@
-import { createQuery } from '@farfetched/core';
+import { createMutation } from '@farfetched/core';
 import { Store, createEvent, sample } from 'effector';
 import { Profile, profileApi } from '~entities/profile';
 
@@ -12,13 +12,10 @@ export function createModel(config: FollowProfileConfig) {
   const { $profile } = config;
 
   const follow = createEvent();
-
   const optimisticallyUpdate = createEvent<Profile>();
-  const rollbackUpdate = createEvent<Profile>();
-  const updateSettled = createEvent();
 
-  const $$followProfileQuery = createQuery({
-    name: 'followProfileQuery',
+  const followProfileMutation = createMutation({
+    name: 'followProfileMutation',
     handler: profileApi.followProfileFx,
   });
 
@@ -29,36 +26,21 @@ export function createModel(config: FollowProfileConfig) {
     source: $username,
     filter: Boolean,
     fn: (username) => ({ username }),
-    target: $$followProfileQuery.start,
+    target: followProfileMutation.start,
   });
 
   sample({
-    clock: $$followProfileQuery.start,
+    clock: followProfileMutation.start,
     source: $profile,
     filter: Boolean,
     fn: (profile) => ({ ...profile, following: true }),
     target: optimisticallyUpdate,
   });
 
-  sample({
-    clock: $$followProfileQuery.finished.failure,
-    source: $profile,
-    filter: Boolean,
-    fn: (profile) => ({ ...profile, following: false }),
-    target: rollbackUpdate,
-  });
-
-  sample({
-    clock: $$followProfileQuery.finished.finally,
-    target: updateSettled,
-  });
-
   return {
+    followProfileMutation,
     optimisticallyUpdate,
-    rollbackUpdate,
-    updateSettled,
     follow,
-    reset: $$followProfileQuery.reset,
     $username,
   };
 }
