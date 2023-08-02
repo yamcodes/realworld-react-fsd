@@ -23,7 +23,7 @@ export function ProfileInfoAuth(props: ProfileInfoAuthProps) {
     <div className="user-info">
       <div className="container">
         <div className="row">
-          {pending && (
+          {pending && !profile && (
             <ProfileWrapper>
               <Spinner />
             </ProfileWrapper>

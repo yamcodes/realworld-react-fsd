@@ -1,5 +1,8 @@
-import { combine, createEvent, restore, sample } from 'effector';
+/* eslint-disable @typescript-eslint/no-shadow */
+import { attach, combine, createEvent, restore, sample } from 'effector';
+import { articleModel } from '~entities/article';
 import { $$sessionModel, User } from '~entities/session';
+import { $ctx } from '~shared/ctx';
 import { createLoaderEffect } from '~shared/lib/router';
 import { mainArticleListModel } from '~widgets/main-article-list';
 import { profileInfoModel } from '~widgets/profile-info';
@@ -14,6 +17,32 @@ const createModel = () => {
   });
 
   const $username = restore(opened, null);
+
+  const navigateToUser = createEvent();
+  const navigateToUserFavorites = createEvent();
+
+  const navigateToUserFx = attach({
+    source: { ctx: $ctx, username: $username },
+    effect: ({ ctx, username }) => ctx.router.navigate(`/profile/${username}`),
+    name: 'navigateToUserFx',
+  });
+
+  const navigateToUserFavoritesFx = attach({
+    source: { ctx: $ctx, username: $username },
+    effect: ({ ctx, username }) =>
+      ctx.router.navigate(`/profile/${username}/favorites`),
+    name: 'navigateToUserFavoritesFx',
+  });
+
+  sample({
+    clock: navigateToUser,
+    target: navigateToUserFx,
+  });
+
+  sample({
+    clock: navigateToUserFavorites,
+    target: navigateToUserFavoritesFx,
+  });
 
   const $context = combine(
     [$username, $$sessionModel.$visitor],
@@ -58,7 +87,23 @@ const createModel = () => {
     target: $$profileInfo.anon.init,
   });
 
-  const $$mainArticleList = mainArticleListModel.createModel();
+  const $$queryModel = articleModel.createQueryModel();
+
+  sample({
+    clock: opened,
+    source: $username,
+    filter: Boolean,
+    fn: (username): articleModel.QueryInit => ({
+      filter: { filter: 'author', value: username },
+    }),
+    target: $$queryModel.init,
+  });
+
+  const $$mainArticleList = mainArticleListModel.createModel({
+    $query: $$queryModel.$query,
+    loadNextPageOn: $$queryModel.$$pagination.nextPage,
+    testOn: $$queryModel.$$filter.filterChanged,
+  });
 
   sample({
     clock: opened,
@@ -71,7 +116,10 @@ const createModel = () => {
     $username,
     $context,
     $$profileInfo,
+    $$queryModel,
     $$mainArticleList,
+    navigateToUser,
+    navigateToUserFavorites,
   };
 };
 

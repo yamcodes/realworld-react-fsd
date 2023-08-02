@@ -1,4 +1,4 @@
-import { MainArticleList } from '~widgets/main-article-list';
+// import { MainArticleList } from '~widgets/main-article-list';
 import { PopularTags } from '~widgets/popular-tags';
 import { $$homePage } from './model';
 
@@ -38,7 +38,7 @@ export function HomePage() {
       <div className="container page">
         <div className="row">
           <div className="col-md-9">
-            <MainArticleList $$model={$$homePage.$$mainArticleList} />
+            {/* <MainArticleList $$model={$$homePage.$$mainArticleList} /> */}
             {/* <div className="feed-toggle">
               <ul className="nav nav-pills outline-active">
                 {auth && (

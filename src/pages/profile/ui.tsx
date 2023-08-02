@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
+import { Button } from '~shared/ui/button';
 import { MainArticleList } from '~widgets/main-article-list';
 import {
   ProfileInfoAnon,
@@ -11,11 +12,29 @@ import { $$profilePage } from './model';
 export function ProfilePage() {
   const context = useUnit($$profilePage.$context);
 
-  const filterBy = useUnit(
-    $$profilePage.$$mainArticleList.$$filterQuery.filterBy,
+  const loadMore = useUnit($$profilePage.$$queryModel.$$pagination.nextPage);
+  const canFetchMore = useUnit($$profilePage.$$mainArticleList.$canFetchMore);
+  const pendingNextPage = useUnit(
+    $$profilePage.$$mainArticleList.$pendingNextPage,
   );
 
+  const filterBy = useUnit($$profilePage.$$queryModel.$$filter.filterBy);
+
   const username = useUnit($$profilePage.$username);
+  // const navigateToUser = useUnit($$profilePage.navigateToUser);
+  // const navigateToUserFavorites = useUnit(
+  //   $$profilePage.navigateToUserFavorites,
+  // );
+
+  const handleUserClick = () => {
+    // navigateToUser();
+    filterBy.author(username!);
+  };
+
+  const handleUserFavoritesClick = () => {
+    // navigateToUserFavorites();
+    filterBy.authorFavorites(username!);
+  };
 
   return (
     <div className="profile-page">
@@ -38,7 +57,7 @@ export function ProfilePage() {
                   <button
                     className={cn('nav-link')}
                     type="button"
-                    onClick={() => filterBy.author(username!)}
+                    onClick={handleUserClick}
                   >
                     My Articles
                   </button>
@@ -47,7 +66,7 @@ export function ProfilePage() {
                   <button
                     className={cn('nav-link active')}
                     type="button"
-                    onClick={() => filterBy.authorFavorites(username!)}
+                    onClick={handleUserFavoritesClick}
                   >
                     Favorited Articles
                   </button>
@@ -56,6 +75,19 @@ export function ProfilePage() {
             </div>
 
             <MainArticleList $$model={$$profilePage.$$mainArticleList} />
+
+            {canFetchMore && (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button
+                  color="primary"
+                  variant="outline"
+                  onClick={loadMore}
+                  disabled={pendingNextPage}
+                >
+                  {pendingNextPage ? 'Loading more...' : 'Load More'}
+                </Button>
+              </div>
+            )}
 
             {/* {tabs.author && (
               <GlobalArticlesList

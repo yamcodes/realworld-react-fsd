@@ -1,6 +1,5 @@
 import { createEvent, sample } from 'effector';
 import { createLoaderEffect } from '~shared/lib/router';
-import { mainArticleListModel } from '~widgets/main-article-list';
 import { popularTagsModel } from '~widgets/popular-tags';
 
 const createModel = () => {
@@ -13,14 +12,13 @@ const createModel = () => {
   });
 
   const $$popularTags = popularTagsModel.createModel();
-  const $$mainArticleList = mainArticleListModel.createModel();
 
   sample({
     clock: opened,
-    target: [$$popularTags.init, $$mainArticleList.init],
+    target: [$$popularTags.init],
   });
 
-  return { loaderFx, unmounted, $$popularTags, $$mainArticleList };
+  return { loaderFx, unmounted, $$popularTags };
 };
 
 export const { loaderFx, ...$$homePage } = createModel();
