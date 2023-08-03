@@ -2,14 +2,31 @@ import { attach } from 'effector';
 import { RequestParams } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
 import { mapArticle } from './lib';
-import { Query } from './types';
+import { FeedQuery, Query } from './types';
 
-type GetArticleParams = { query?: Query; params?: RequestParams };
+type GetArticlesParams = { query?: Query; params?: RequestParams };
 
 export const getArticlesFx = attach({
   source: $ctx,
-  effect: async (ctx, { query, params }: GetArticleParams) => {
+  effect: async (ctx, { query, params }: GetArticlesParams) => {
     const response = await ctx.restClient.articles.getArticles(query, params);
+    const articles = response.data.articles.map(mapArticle);
+    return {
+      articles,
+      articlesCount: response.data.articlesCount,
+    };
+  },
+});
+
+type GetArticlesFeedParams = { query?: FeedQuery; params?: RequestParams };
+
+export const getArticlesFeedFx = attach({
+  source: $ctx,
+  effect: async (ctx, { query, params }: GetArticlesFeedParams) => {
+    const response = await ctx.restClient.articles.getArticlesFeed(
+      query,
+      params,
+    );
     const articles = response.data.articles.map(mapArticle);
     return {
       articles,

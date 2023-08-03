@@ -1,30 +1,13 @@
-// import { MainArticleList } from '~widgets/main-article-list';
+import cn from 'classnames';
+import { useUnit } from 'effector-react';
+import { $$sessionModel } from '~entities/session';
+import { MainArticleList } from '~widgets/main-article-list';
 import { PopularTags } from '~widgets/popular-tags';
-import { $$homePage } from './model';
-
-// type HomePageProps = {
-//   auth?: boolean;
-// };
-
-// type TabsState = {
-//   globalfeed?: boolean;
-//   userfeed?: boolean;
-//   tagfeed?: string;
-// };
+import { UserArticleList } from '~widgets/user-article-list';
+import { $$homePage, HomePageModel } from './model';
 
 export function HomePage() {
-  // const { auth } = props;
-
-  // const initTabsState: TabsState = {
-  //   ...(auth && { userfeed: true }),
-  //   ...(!auth && { globalfeed: true }),
-  // };
-
-  // const [tabs, setTabs] = useState<TabsState>(initTabsState);
-
-  // const onUserfeedClick = () => setTabs({ userfeed: true });
-  // const onGlobalfeedClick = () => setTabs({ globalfeed: true });
-  // const onTabfeedClick = (tag: string) => setTabs({ tagfeed: tag });
+  const userFeed = useUnit($$homePage.$userFeed);
 
   return (
     <div className="home-page">
@@ -38,56 +21,15 @@ export function HomePage() {
       <div className="container page">
         <div className="row">
           <div className="col-md-9">
-            {/* <MainArticleList $$model={$$homePage.$$mainArticleList} /> */}
-            {/* <div className="feed-toggle">
-              <ul className="nav nav-pills outline-active">
-                {auth && (
-                  <li className="nav-item">
-                    <button
-                      className={cn('nav-link', { active: tabs.userfeed })}
-                      type="button"
-                      onClick={onUserfeedClick}
-                    >
-                      Your Feed
-                    </button>
-                  </li>
-                )}
-                <li className="nav-item">
-                  <button
-                    className={cn('nav-link', { active: tabs.globalfeed })}
-                    type="button"
-                    onClick={onGlobalfeedClick}
-                  >
-                    Global Feed
-                  </button>
-                </li>
-                {tabs.tagfeed && (
-                  <li className="nav-item">
-                    <button
-                      className={cn('nav-link', { active: tabs.tagfeed })}
-                      type="button"
-                    >
-                      #{tabs.tagfeed}
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </div>
+            <ArticlesFeedNavigation $$model={$$homePage} />
 
-            {tabs.userfeed && (
-              <UserArticlesList query={{ limit: 10, offset: 0 }} />
+            {userFeed && (
+              <UserArticleList $$model={$$homePage.$$userArticleList} />
             )}
 
-            {tabs.globalfeed && (
-              <GlobalArticlesList query={{ limit: 10, offset: 0 }} />
+            {!userFeed && (
+              <MainArticleList $$model={$$homePage.$$mainArticleList} />
             )}
-
-            {tabs.tagfeed && (
-              <GlobalArticlesList
-                query={{ limit: 10, offset: 0, tag: tabs.tagfeed }}
-              />
-            )}
-          */}
           </div>
 
           <div className="col-md-3">
@@ -95,6 +37,58 @@ export function HomePage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+type ArticlesFeedNavigationProps = {
+  $$model: HomePageModel;
+};
+
+function ArticlesFeedNavigation(props: ArticlesFeedNavigationProps) {
+  const { $$model } = props;
+
+  const auth = useUnit($$sessionModel.$visitor);
+  const filter = useUnit($$model.$$filterModel.$query);
+  const filterBy = useUnit($$model.$$filterModel.filterBy);
+  const userFeed = useUnit($$model.$userFeed);
+
+  const userFeedClicked = useUnit($$model.userFeedClicked);
+
+  return (
+    <div className="feed-toggle">
+      <ul className="nav nav-pills outline-active">
+        {auth && (
+          <li className="nav-item">
+            <button
+              className={cn('nav-link', { active: userFeed })}
+              type="button"
+              onClick={userFeedClicked}
+            >
+              Your Feed
+            </button>
+          </li>
+        )}
+        <li className="nav-item">
+          <button
+            className={cn('nav-link', { active: !userFeed && !filter })}
+            type="button"
+            onClick={() => filterBy.all()}
+          >
+            Global Feed
+          </button>
+        </li>
+        {filter?.tag && (
+          <li className="nav-item">
+            <button
+              className={cn('nav-link', { active: !userFeed && filter.tag })}
+              type="button"
+            >
+              #{filter.tag}
+            </button>
+          </li>
+        )}
+      </ul>
     </div>
   );
 }

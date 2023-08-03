@@ -7,6 +7,7 @@ export type PopularTagsModel = Omit<ReturnType<typeof createModel>, 'init'>;
 export function createModel() {
   const init = createEvent();
   const unmounted = createEvent();
+  const tagClicked = createEvent<string>();
 
   const popularTagsQuery = createQuery({
     handler: tagApi.getTagsFx,
@@ -18,5 +19,5 @@ export function createModel() {
     target: popularTagsQuery.start,
   });
 
-  return { init, unmounted, popularTagsQuery };
+  return { init, unmounted, tagClicked, popularTagsQuery };
 }

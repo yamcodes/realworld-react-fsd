@@ -113,7 +113,7 @@ const isOwner = (visitor: User | null, username: string | null) =>
   visitor && visitor.username === username;
 
 const getInitialFilter = (pageCtx: PageCtx): articleModel.FilterInit => ({
-  filter: pageCtx.path,
+  key: pageCtx.path,
   value: pageCtx.username,
 });
 

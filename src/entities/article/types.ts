@@ -21,3 +21,5 @@ export type Query = {
   offset?: number;
   limit?: number;
 };
+
+export type FeedQuery = Pick<Query, 'offset' | 'limit'>;

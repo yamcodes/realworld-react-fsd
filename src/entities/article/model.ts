@@ -106,7 +106,7 @@ export function createPaginationModel() {
 type FilterQuery = Pick<Query, 'author' | 'favorited' | 'tag'>;
 
 export type FilterInit = {
-  filter: keyof FilterQuery;
+  key: keyof FilterQuery;
   value: string;
 };
 
@@ -121,7 +121,7 @@ export function createFilterModel() {
 
   const $query = createStore<FilterQuery | null>(null)
     .on(init, (defaultQuery, newQuery) =>
-      newQuery ? { [newQuery.filter]: newQuery.value } : defaultQuery,
+      newQuery ? { [newQuery.key]: newQuery.value } : defaultQuery,
     )
     .reset(reset);
 

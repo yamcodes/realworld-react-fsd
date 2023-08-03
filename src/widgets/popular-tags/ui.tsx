@@ -10,6 +10,7 @@ export function PopularTags(props: PopularTagsProps) {
   const { $$model } = props;
 
   const { data: tags, pending, error } = useUnit($$model.popularTagsQuery);
+  const tagClicked = useUnit($$model.tagClicked);
 
   return (
     <div className="sidebar">
@@ -26,10 +27,7 @@ export function PopularTags(props: PopularTagsProps) {
               key={tag}
               className="tag-pill tag-default"
               type="button"
-              // TODO: Feature
-              // onClick={() => {
-              //   onTagClick(tag);
-              // }}
+              onClick={() => tagClicked(tag)}
             >
               {tag}
             </button>

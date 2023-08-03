@@ -5,13 +5,13 @@ import { Link } from 'react-router-dom';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
-import { MainArticleListModel } from './model';
+import { UserArticleListModel } from './model';
 
-type MainArticleListProps = {
-  $$model: MainArticleListModel;
+type UserArticleListProps = {
+  $$model: UserArticleListModel;
 };
 
-export function MainArticleList(props: MainArticleListProps) {
+export function UserArticleList(props: UserArticleListProps) {
   const { $$model } = props;
 
   const [
