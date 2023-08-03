@@ -3,9 +3,9 @@ import { Profile } from '~entities/profile';
 import { $$sessionModel, User } from '~entities/session';
 import { createNavigateMobel } from '../lib';
 
-export type ProfileInfoVisitorModel = ReturnType<typeof createVisitorModel>;
+export type ProfileInfoOwnerModel = ReturnType<typeof createOwnerModel>;
 
-export function createVisitorModel() {
+export function createOwnerModel() {
   const init = createEvent();
   const unmounted = createEvent();
   const navigateToSettings = createEvent();

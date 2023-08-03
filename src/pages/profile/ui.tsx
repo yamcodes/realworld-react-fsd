@@ -1,102 +1,72 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
-import { Button } from '~shared/ui/button';
+import { Link } from 'react-router-dom';
 import { MainArticleList } from '~widgets/main-article-list';
 import {
   ProfileInfoAnon,
   ProfileInfoAuth,
-  ProfileInfoVisitor,
+  ProfileInfoOwner,
 } from '~widgets/profile-info';
-import { $$profilePage } from './model';
+import { $$profilePage, PageCtx } from './model';
 
 export function ProfilePage() {
-  const context = useUnit($$profilePage.$context);
-
-  const loadMore = useUnit($$profilePage.$$queryModel.$$pagination.nextPage);
-  const canFetchMore = useUnit($$profilePage.$$mainArticleList.$canFetchMore);
-  const pendingNextPage = useUnit(
-    $$profilePage.$$mainArticleList.$pendingNextPage,
-  );
-
-  const filterBy = useUnit($$profilePage.$$queryModel.$$filter.filterBy);
-
-  const username = useUnit($$profilePage.$username);
-
-  const handleUserClick = () => {
-    filterBy.author(username!);
-  };
-
-  const handleUserFavoritesClick = () => {
-    filterBy.authorFavorites(username!);
-  };
+  const profileCtx = useUnit($$profilePage.$profileCtx);
+  const pageCtx = useUnit($$profilePage.$pageCtx);
 
   return (
     <div className="profile-page">
-      {context === 'auth' && (
+      {profileCtx === 'auth' && (
         <ProfileInfoAuth $$model={$$profilePage.$$profileInfo.auth} />
       )}
-      {context === 'visitor' && (
-        <ProfileInfoVisitor $$model={$$profilePage.$$profileInfo.visitor} />
+      {profileCtx === 'owner' && (
+        <ProfileInfoOwner $$model={$$profilePage.$$profileInfo.owner} />
       )}
-      {context === 'anon' && (
+      {profileCtx === 'anon' && (
         <ProfileInfoAnon $$model={$$profilePage.$$profileInfo.anon} />
       )}
 
       <div className="container">
         <div className="row">
           <div className="col-xs-12 col-md-10 offset-md-1">
-            <div className="articles-toggle">
-              <ul className="nav nav-pills outline-active">
-                <li className="nav-item">
-                  <button
-                    className={cn('nav-link')}
-                    type="button"
-                    onClick={handleUserClick}
-                  >
-                    My Articles
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button
-                    className={cn('nav-link active')}
-                    type="button"
-                    onClick={handleUserFavoritesClick}
-                  >
-                    Favorited Articles
-                  </button>
-                </li>
-              </ul>
-            </div>
+            <ArticlesFeedNavigation pageCtx={pageCtx!} />
 
             <MainArticleList $$model={$$profilePage.$$mainArticleList} />
-
-            {canFetchMore && (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  color="primary"
-                  variant="outline"
-                  onClick={loadMore}
-                  disabled={pendingNextPage}
-                >
-                  {pendingNextPage ? 'Loading more...' : 'Load More'}
-                </Button>
-              </div>
-            )}
-
-            {/* {tabs.author && (
-              <GlobalArticlesList
-                query={{ limit: 10, offset: 0, author: tabs.author }}
-              />
-            )}
-
-            {tabs.favorited && (
-              <GlobalArticlesList
-                query={{ limit: 10, offset: 0, favorited: tabs.favorited }}
-              />
-            )} */}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+type ArticlesFeedNavigationProps = {
+  pageCtx: PageCtx;
+};
+
+function ArticlesFeedNavigation(props: ArticlesFeedNavigationProps) {
+  const { pageCtx } = props;
+
+  const { username, path } = pageCtx;
+
+  return (
+    <div className="articles-toggle">
+      <ul className="nav nav-pills outline-active">
+        <li className="nav-item">
+          <Link
+            to={`/profile/${username}`}
+            className={cn('nav-link', { active: path === 'author' })}
+          >
+            My Articles
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link
+            to={`/profile/${username}/favorites`}
+            className={cn('nav-link', { active: path === 'favorited' })}
+          >
+            Favorited Articles
+          </Link>
+        </li>
+      </ul>
     </div>
   );
 }

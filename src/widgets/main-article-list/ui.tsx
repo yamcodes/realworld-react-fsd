@@ -14,12 +14,23 @@ type MainArticleListProps = {
 export function MainArticleList(props: MainArticleListProps) {
   const { $$model } = props;
 
-  const [articles, pendingInitial, error, emptyData] = useUnit([
+  const [
+    articles,
+    pendingInitial,
+    error,
+    emptyData,
+    canFetchMore,
+    pendingNextPage,
+  ] = useUnit([
     $$model.$articles,
     $$model.$pendingInitial,
     $$model.$error,
     $$model.$emptyData,
+    $$model.$canFetchMore,
+    $$model.$pendingNextPage,
   ]);
+
+  const loadMore = useUnit($$model.$$pagination.nextPage);
 
   const unmounted = useUnit($$model.unmounted);
   // const loadMore = useUnit($$model.$$pagination.nextPage);
@@ -80,6 +91,19 @@ export function MainArticleList(props: MainArticleListProps) {
             </div>
           ),
         )}
+
+      {canFetchMore && (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Button
+            color="primary"
+            variant="outline"
+            onClick={loadMore}
+            disabled={pendingNextPage}
+          >
+            {pendingNextPage ? 'Loading more...' : 'Load More'}
+          </Button>
+        </div>
+      )}
     </>
   );
 }

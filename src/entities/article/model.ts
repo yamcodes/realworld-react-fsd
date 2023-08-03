@@ -69,7 +69,7 @@ type PaginationConfig = Required<PaginationInit>;
 
 export type PaginationModel = ReturnType<typeof createPaginationModel>;
 
-function createPaginationModel() {
+export function createPaginationModel() {
   const init = createEvent<PaginationInit | void>();
   const reset = createEvent();
   const nextPage = createEvent();
@@ -105,14 +105,15 @@ function createPaginationModel() {
 
 type FilterQuery = Pick<Query, 'author' | 'favorited' | 'tag'>;
 
-type FilterInit = {
+export type FilterInit = {
   filter: keyof FilterQuery;
   value: string;
 };
 
 export type FilterModel = ReturnType<typeof createFilterModel>;
+export type FilterStore = FilterModel['$query'];
 
-function createFilterModel() {
+export function createFilterModel() {
   const init = createEvent<FilterInit | void>();
   const reset = createEvent();
 

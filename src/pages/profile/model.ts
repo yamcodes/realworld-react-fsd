@@ -5,38 +5,42 @@ import { createLoaderEffect } from '~shared/lib/router';
 import { mainArticleListModel } from '~widgets/main-article-list';
 import { profileInfoModel } from '~widgets/profile-info';
 
+export type PageCtx = {
+  username: string;
+  path: 'author' | 'favorited';
+};
+
 const createModel = () => {
-  const opened = createEvent<{
-    username: string;
-    isFavorites: boolean;
-  }>();
+  const opened = createEvent<PageCtx>();
   const unmounted = createEvent();
 
-  const loaderFx = createLoaderEffect(async (args) => {
-    const url = new URL(args.request.url);
-
+  const usernameLoaderFx = createLoaderEffect(async (args) => {
     const username = args.params!.username!;
-    const isFavorites = url.pathname.split('/').pop() === 'favorites';
-
-    opened({ username, isFavorites });
-
+    opened({ username, path: 'author' });
     return null;
   });
 
-  const $pageContext = restore(opened, null);
-  const $username = $pageContext.map(
+  const favoritesLoaderFx = createLoaderEffect(async (args) => {
+    const username = args.params!.username!;
+    opened({ username, path: 'favorited' });
+    return null;
+  });
+
+  const $pageCtx = restore(opened, null);
+
+  const $username = $pageCtx.map(
     (pageContext) => pageContext?.username || null,
   );
 
-  const $context = combine(
+  const $profileCtx = combine(
     [$username, $$sessionModel.$visitor],
     ([username, visitor]) => {
       switch (true) {
         case isAuth(visitor, username):
           return 'auth';
 
-        case isVisitor(visitor, username):
-          return 'visitor';
+        case isOwner(visitor, username):
+          return 'owner';
 
         default:
           return 'anon';
@@ -46,70 +50,72 @@ const createModel = () => {
 
   const $$profileInfo = {
     auth: profileInfoModel.createAuthModel({ $username }),
-    visitor: profileInfoModel.createVisitorModel(),
+    owner: profileInfoModel.createOwnerModel(),
     anon: profileInfoModel.createAnonModel({ $username }),
   };
 
   sample({
     clock: opened,
-    source: $context,
-    filter: (context) => context === 'auth',
+    source: $profileCtx,
+    filter: (profileCtx) => profileCtx === 'auth',
     target: $$profileInfo.auth.init,
   });
 
   sample({
     clock: opened,
-    source: $context,
-    filter: (context) => context === 'visitor',
-    target: $$profileInfo.visitor.init,
+    source: $profileCtx,
+    filter: (profileCtx) => profileCtx === 'owner',
+    target: $$profileInfo.owner.init,
   });
 
   sample({
     clock: opened,
-    source: $context,
-    filter: (context) => context === 'anon',
+    source: $profileCtx,
+    filter: (profileCtx) => profileCtx === 'anon',
     target: $$profileInfo.anon.init,
   });
 
-  const $$queryModel = articleModel.createQueryModel();
+  const $$filterModel = articleModel.createFilterModel();
 
   sample({
     clock: opened,
-    source: $pageContext,
+    source: $pageCtx,
     filter: Boolean,
-    fn: ({ username, isFavorites }): articleModel.QueryInit => ({
-      filter: { filter: isFavorites ? 'favorited' : 'author', value: username },
-    }),
-    target: $$queryModel.init,
+    fn: getInitialFilter,
+    target: $$filterModel.init,
   });
 
   const $$mainArticleList = mainArticleListModel.createModel({
-    $query: $$queryModel.$query,
-    loadNextPageOn: $$queryModel.$$pagination.nextPage,
+    $filterQuery: $$filterModel.$query,
   });
 
   sample({
-    clock: [opened, $$queryModel.$$filter.filterChanged],
+    clock: opened,
     target: $$mainArticleList.init,
   });
 
   return {
-    loaderFx,
+    usernameLoaderFx,
+    favoritesLoaderFx,
     unmounted,
-    $username,
-    $context,
+    $pageCtx,
+    $profileCtx,
     $$profileInfo,
-    $$queryModel,
+    $$filterModel,
     $$mainArticleList,
   };
 };
 
-export const { loaderFx, ...$$profilePage } = createModel();
+const isAuth = (visitor: User | null, username: string | null) =>
+  visitor && username && visitor.username !== username;
 
-function isAuth(visitor: User | null, username: string | null) {
-  return visitor && username && visitor.username !== username;
-}
+const isOwner = (visitor: User | null, username: string | null) =>
+  visitor && visitor.username === username;
 
-function isVisitor(visitor: User | null, username: string | null) {
-  return visitor && visitor.username === username;
-}
+const getInitialFilter = (pageCtx: PageCtx): articleModel.FilterInit => ({
+  filter: pageCtx.path,
+  value: pageCtx.username,
+});
+
+export const { usernameLoaderFx, favoritesLoaderFx, ...$$profilePage } =
+  createModel();

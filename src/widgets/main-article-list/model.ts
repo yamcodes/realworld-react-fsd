@@ -1,17 +1,16 @@
 import { createQuery } from '@farfetched/core';
-import { createEvent, createStore, sample, Event } from 'effector';
+import { createEvent, createStore, sample, combine } from 'effector';
 import { equals, and, not } from 'patronum';
 import { Article, articleApi, articleModel } from '~entities/article';
 
 export type MainArticleListModel = Omit<ReturnType<typeof createModel>, 'init'>;
 
 type MainArticleListConfgi = {
-  $query: articleModel.QueryStore;
-  loadNextPageOn: Event<void>;
+  $filterQuery: articleModel.FilterStore;
 };
 
 export function createModel(config: MainArticleListConfgi) {
-  const { $query, loadNextPageOn } = config;
+  const { $filterQuery } = config;
 
   const init = createEvent();
   const reset = createEvent();
@@ -24,12 +23,22 @@ export function createModel(config: MainArticleListConfgi) {
     name: 'articlesQuery',
   });
 
+  const $$pagination = articleModel.createPaginationModel();
+
+  const $query = combine(
+    $$pagination.$query,
+    $filterQuery,
+    (pageQuery, filterQuery) => ({
+      query: { ...pageQuery, ...filterQuery },
+    }),
+  );
+
   const $pendingInitial = createStore(false)
     .on(fetchInitial, () => true)
     .on(articlesQuery.finished.finally, () => false);
 
   const $pendingNextPage = createStore(false)
-    .on(loadNextPageOn, () => true)
+    .on($$pagination.nextPage, () => true)
     .on(articlesQuery.finished.finally, () => false);
 
   const $articles = createStore<Array<Article>>([])
@@ -56,9 +65,14 @@ export function createModel(config: MainArticleListConfgi) {
   });
 
   sample({
-    clock: loadNextPageOn,
+    clock: $$pagination.nextPage,
     source: $query,
     target: articlesQuery.start,
+  });
+
+  sample({
+    clock: reset,
+    target: [$$pagination.reset, articlesQuery.reset],
   });
 
   return {
@@ -70,5 +84,6 @@ export function createModel(config: MainArticleListConfgi) {
     $error: articlesQuery.$error,
     $emptyData,
     $canFetchMore,
+    $$pagination,
   };
 }
