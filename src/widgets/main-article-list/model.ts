@@ -1,21 +1,20 @@
-/* eslint-disable @typescript-eslint/no-shadow */
 import { createQuery } from '@farfetched/core';
-import { Store, createEvent, createStore, sample, Event } from 'effector';
+import { createEvent, createStore, sample, Event } from 'effector';
 import { equals, and, not } from 'patronum';
-import { Article, Query, articleApi } from '~entities/article';
+import { Article, articleApi, articleModel } from '~entities/article';
 
 export type MainArticleListModel = Omit<ReturnType<typeof createModel>, 'init'>;
 
 type MainArticleListConfgi = {
-  $query: Store<{ query: Query }>;
+  $query: articleModel.QueryStore;
   loadNextPageOn: Event<void>;
-  testOn: Event<void>;
 };
 
 export function createModel(config: MainArticleListConfgi) {
-  const { $query, loadNextPageOn, testOn } = config;
+  const { $query, loadNextPageOn } = config;
 
   const init = createEvent();
+  const reset = createEvent();
   const unmounted = createEvent();
 
   const fetchInitial = createEvent();
@@ -38,11 +37,11 @@ export function createModel(config: MainArticleListConfgi) {
       ...prevArticles,
       ...data.result.articles,
     ])
-    .reset(init);
+    .reset(reset);
 
   const $articlesCount = createStore<number | null>(null)
     .on(articlesQuery.finished.success, (_, data) => data.result.articlesCount)
-    .reset(init);
+    .reset(reset);
 
   const $articlesReceived = $articles.map((articles) => articles.length);
 
@@ -53,12 +52,7 @@ export function createModel(config: MainArticleListConfgi) {
   sample({
     clock: init,
     source: $query,
-    target: [articlesQuery.start, fetchInitial],
-  });
-
-  sample({
-    clock: testOn,
-    target: init,
+    target: [reset, articlesQuery.start, fetchInitial],
   });
 
   sample({

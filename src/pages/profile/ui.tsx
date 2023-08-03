@@ -21,18 +21,12 @@ export function ProfilePage() {
   const filterBy = useUnit($$profilePage.$$queryModel.$$filter.filterBy);
 
   const username = useUnit($$profilePage.$username);
-  // const navigateToUser = useUnit($$profilePage.navigateToUser);
-  // const navigateToUserFavorites = useUnit(
-  //   $$profilePage.navigateToUserFavorites,
-  // );
 
   const handleUserClick = () => {
-    // navigateToUser();
     filterBy.author(username!);
   };
 
   const handleUserFavoritesClick = () => {
-    // navigateToUserFavorites();
     filterBy.authorFavorites(username!);
   };
 

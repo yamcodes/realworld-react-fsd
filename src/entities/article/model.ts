@@ -9,15 +9,18 @@ import {
 import { Query } from './types';
 
 export type QueryInit = {
-  filter?: Filter;
-  pagination?: Pagination | void;
+  filter?: FilterInit;
+  pagination?: PaginationInit;
 };
 
+export type QueryModel = ReturnType<typeof createQueryModel>;
+export type QueryStore = QueryModel['$query'];
+
 export function createQueryModel() {
-  const init = createEvent<QueryInit>();
+  const init = createEvent<QueryInit | void>();
   const reset = createEvent();
 
-  const $$filter = createFilterQueryModel();
+  const $$filter = createFilterModel();
   const $$pagination = createPaginationModel();
 
   const $query = combine(
@@ -30,13 +33,13 @@ export function createQueryModel() {
 
   sample({
     clock: init,
-    fn: ({ filter }) => filter,
+    fn: (query) => query && query.filter,
     target: $$filter.init,
   });
 
   sample({
     clock: init,
-    fn: ({ pagination }) => pagination,
+    fn: (query) => query && query.pagination,
     target: $$pagination.init,
   });
 
@@ -56,20 +59,23 @@ export function createQueryModel() {
 
 type PaginationQuery = Required<Pick<Query, 'limit' | 'offset'>>;
 
-type Pagination = {
+type PaginationInit = {
   page?: number;
   pageSize?: number;
   step?: number;
 };
-type Pagination1 = Required<Pagination>;
+
+type PaginationConfig = Required<PaginationInit>;
+
+export type PaginationModel = ReturnType<typeof createPaginationModel>;
 
 function createPaginationModel() {
-  const init = createEvent<Pagination | void>();
+  const init = createEvent<PaginationInit | void>();
   const reset = createEvent();
   const nextPage = createEvent();
   const pageChanged = createEvent();
 
-  const $config = createStore<Pagination1>({
+  const $config = createStore<PaginationConfig>({
     page: 1,
     pageSize: 10,
     step: 1,
@@ -99,13 +105,15 @@ function createPaginationModel() {
 
 type FilterQuery = Pick<Query, 'author' | 'favorited' | 'tag'>;
 
-type Filter = {
+type FilterInit = {
   filter: keyof FilterQuery;
   value: string;
 };
 
-function createFilterQueryModel() {
-  const init = createEvent<Filter | void>();
+export type FilterModel = ReturnType<typeof createFilterModel>;
+
+function createFilterModel() {
+  const init = createEvent<FilterInit | void>();
   const reset = createEvent();
 
   const filterChanged = createEvent();

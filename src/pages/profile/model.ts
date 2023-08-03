@@ -1,48 +1,32 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-import { attach, combine, createEvent, restore, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 import { articleModel } from '~entities/article';
 import { $$sessionModel, User } from '~entities/session';
-import { $ctx } from '~shared/ctx';
 import { createLoaderEffect } from '~shared/lib/router';
 import { mainArticleListModel } from '~widgets/main-article-list';
 import { profileInfoModel } from '~widgets/profile-info';
 
 const createModel = () => {
-  const opened = createEvent<string | null>();
+  const opened = createEvent<{
+    username: string;
+    isFavorites: boolean;
+  }>();
   const unmounted = createEvent();
 
   const loaderFx = createLoaderEffect(async (args) => {
-    opened(args.params?.username || null);
+    const url = new URL(args.request.url);
+
+    const username = args.params!.username!;
+    const isFavorites = url.pathname.split('/').pop() === 'favorites';
+
+    opened({ username, isFavorites });
+
     return null;
   });
 
-  const $username = restore(opened, null);
-
-  const navigateToUser = createEvent();
-  const navigateToUserFavorites = createEvent();
-
-  const navigateToUserFx = attach({
-    source: { ctx: $ctx, username: $username },
-    effect: ({ ctx, username }) => ctx.router.navigate(`/profile/${username}`),
-    name: 'navigateToUserFx',
-  });
-
-  const navigateToUserFavoritesFx = attach({
-    source: { ctx: $ctx, username: $username },
-    effect: ({ ctx, username }) =>
-      ctx.router.navigate(`/profile/${username}/favorites`),
-    name: 'navigateToUserFavoritesFx',
-  });
-
-  sample({
-    clock: navigateToUser,
-    target: navigateToUserFx,
-  });
-
-  sample({
-    clock: navigateToUserFavorites,
-    target: navigateToUserFavoritesFx,
-  });
+  const $pageContext = restore(opened, null);
+  const $username = $pageContext.map(
+    (pageContext) => pageContext?.username || null,
+  );
 
   const $context = combine(
     [$username, $$sessionModel.$visitor],
@@ -91,10 +75,10 @@ const createModel = () => {
 
   sample({
     clock: opened,
-    source: $username,
+    source: $pageContext,
     filter: Boolean,
-    fn: (username): articleModel.QueryInit => ({
-      filter: { filter: 'author', value: username },
+    fn: ({ username, isFavorites }): articleModel.QueryInit => ({
+      filter: { filter: isFavorites ? 'favorited' : 'author', value: username },
     }),
     target: $$queryModel.init,
   });
@@ -102,11 +86,10 @@ const createModel = () => {
   const $$mainArticleList = mainArticleListModel.createModel({
     $query: $$queryModel.$query,
     loadNextPageOn: $$queryModel.$$pagination.nextPage,
-    testOn: $$queryModel.$$filter.filterChanged,
   });
 
   sample({
-    clock: opened,
+    clock: [opened, $$queryModel.$$filter.filterChanged],
     target: $$mainArticleList.init,
   });
 
@@ -118,8 +101,6 @@ const createModel = () => {
     $$profileInfo,
     $$queryModel,
     $$mainArticleList,
-    navigateToUser,
-    navigateToUserFavorites,
   };
 };
 
