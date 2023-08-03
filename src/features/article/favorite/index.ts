@@ -1,2 +1,2 @@
-export { FavoriteArticleButton } from './favorite-article';
-export { UnfavoriteArticleButton } from './unfavorite-article';
+export * as favoriteModel from './model';
+export { FavoriteArticle } from './ui';

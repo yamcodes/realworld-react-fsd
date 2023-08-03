@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { useUnit } from 'effector-react';
-import { IoHeart } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
+import { FavoriteArticle, UnfavoriteArticle } from '~features/article';
 import { PATH_PAGE } from '~shared/lib/react-router';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
@@ -50,14 +50,17 @@ export function MainArticleList(props: MainArticleListProps) {
       )}
 
       {articles &&
-        articles.map(
-          ({
+        articles.map((article) => {
+          const {
             author: { username, image },
             title,
             description,
             slug,
             createdAt,
-          }) => (
+            favorited,
+          } = article;
+
+          return (
             <div key={slug} className="article-preview">
               <div className="article-meta">
                 <Link to={PATH_PAGE.profile.root(username)}>
@@ -72,14 +75,17 @@ export function MainArticleList(props: MainArticleListProps) {
                   </Link>
                   <span className="date">{createdAt}</span>
                 </div>
-                <Button
-                  color="primary"
-                  variant="outline"
-                  className="pull-xs-right"
-                  // onClick={handleFavorite}
-                >
-                  <IoHeart size={16} />
-                </Button>
+                {favorited ? (
+                  <UnfavoriteArticle
+                    $$model={$$model.$$unfavoriteArticle}
+                    article={article}
+                  />
+                ) : (
+                  <FavoriteArticle
+                    $$model={$$model.$$favoriteArticle}
+                    article={article}
+                  />
+                )}
               </div>
               <Link to={PATH_PAGE.article.slug(slug)} className="preview-link">
                 <h1>{title}</h1>
@@ -87,8 +93,8 @@ export function MainArticleList(props: MainArticleListProps) {
                 <span>Read more...</span>
               </Link>
             </div>
-          ),
-        )}
+          );
+        })}
 
       {canFetchMore && (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
