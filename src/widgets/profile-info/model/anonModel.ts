@@ -1,45 +1,38 @@
 import { createQuery } from '@farfetched/core';
 import { Store, createEvent, sample } from 'effector';
+import { debug } from 'patronum';
 import { profileApi } from '~entities/profile';
-import { createNavigateMobel } from '../lib';
+import { ProfileInfoModel } from './types';
 
 type ProfileInfoAnonConfig = {
   $username: Store<string | null>;
 };
 
-export type ProfileInfoAnonModel = ReturnType<typeof createAnonModel>;
-
-export function createAnonModel(config: ProfileInfoAnonConfig) {
+export function createAnonModel(
+  config: ProfileInfoAnonConfig,
+): ProfileInfoModel {
   const { $username } = config;
 
   const init = createEvent();
   const unmounted = createEvent();
   const reset = createEvent();
-  const navigateToLogin = createEvent();
 
-  const $$profileQuery = createQuery({
+  const profileQuery = createQuery({
     handler: profileApi.getProfileFx,
     name: 'profileQuery',
   });
-
-  const $$navigateToLogin = createNavigateMobel({ path: '/login' });
 
   sample({
     clock: init,
     source: $username,
     filter: Boolean,
     fn: (username) => ({ username }),
-    target: $$profileQuery.start,
-  });
-
-  sample({
-    clock: navigateToLogin,
-    target: $$navigateToLogin.navigate,
+    target: profileQuery.start,
   });
 
   sample({
     clock: reset,
-    target: $$profileQuery.reset,
+    target: profileQuery.reset,
   });
 
   sample({
@@ -47,12 +40,18 @@ export function createAnonModel(config: ProfileInfoAnonConfig) {
     target: reset,
   });
 
+  const $profile = profileQuery.$data;
+  const { $pending } = profileQuery;
+  const { $error } = profileQuery;
+
+  debug({ trace: true }, $profile);
+
   return {
     init,
     unmounted,
-    navigateToLogin,
-    $profile: $$profileQuery.$data,
-    $pending: $$profileQuery.$pending,
-    $error: $$profileQuery.$error,
+    reset,
+    $profile,
+    $pending,
+    $error,
   };
 }

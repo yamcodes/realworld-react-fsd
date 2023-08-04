@@ -1,6 +1,8 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
+import { ArticlePreview } from '~entities/article';
 import { $$sessionModel } from '~entities/session';
+import { FavoriteToggler } from '~widgets/favorite-toggler';
 import { MainArticleList } from '~widgets/main-article-list';
 import { PopularTags } from '~widgets/popular-tags';
 import { UserArticleList } from '~widgets/user-article-list';
@@ -28,7 +30,25 @@ export function HomePage() {
             )}
 
             {!userFeed && (
-              <MainArticleList $$model={$$homePage.$$mainArticleList} />
+              <MainArticleList
+                $$model={$$homePage.$$mainArticleList}
+                renderArticle={(article) => (
+                  <ArticlePreview
+                    article={article}
+                    actions={
+                      <FavoriteToggler
+                        article={article}
+                        $$favoriteModel={
+                          $$homePage.$$mainArticleList.$$favoriteArticle
+                        }
+                        $$unfavoriteModel={
+                          $$homePage.$$mainArticleList.$$unfavoriteArticle
+                        }
+                      />
+                    }
+                  />
+                )}
+              />
             )}
           </div>
 

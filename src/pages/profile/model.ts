@@ -1,4 +1,5 @@
 import { combine, createEvent, restore, sample } from 'effector';
+import { debug } from 'patronum';
 import { articleModel } from '~entities/article';
 import { $$sessionModel, User } from '~entities/session';
 import { createLoaderEffect } from '~shared/lib/router';
@@ -44,35 +45,28 @@ const createModel = () => {
 
         default:
           return 'anon';
+
+        // case isAnon(visitor, username):
+        //   return 'anon';
+
+        // default:
+        //   return null;
       }
     },
   );
 
-  const $$profileInfo = {
-    auth: profileInfoModel.createAuthModel({ $username }),
-    owner: profileInfoModel.createOwnerModel(),
-    anon: profileInfoModel.createAnonModel({ $username }),
-  };
+  debug({ trace: true }, $profileCtx);
 
-  sample({
-    clock: opened,
-    source: $profileCtx,
-    filter: (profileCtx) => profileCtx === 'auth',
-    target: $$profileInfo.auth.init,
+  const $$profileInfo = profileInfoModel.createModel({
+    $profileCtx,
+    $username,
   });
 
   sample({
     clock: opened,
-    source: $profileCtx,
-    filter: (profileCtx) => profileCtx === 'owner',
-    target: $$profileInfo.owner.init,
-  });
-
-  sample({
-    clock: opened,
-    source: $profileCtx,
-    filter: (profileCtx) => profileCtx === 'anon',
-    target: $$profileInfo.anon.init,
+    source: $username,
+    filter: Boolean,
+    target: $$profileInfo.init,
   });
 
   const $$filterModel = articleModel.createFilterModel();
@@ -110,6 +104,9 @@ const isAuth = (visitor: User | null, username: string | null) =>
   visitor && username && visitor.username !== username;
 
 const isOwner = (visitor: User | null, username: string | null) =>
+  visitor && visitor.username === username;
+
+const isAnon = (visitor: User | null, username: string | null) =>
   visitor && visitor.username === username;
 
 const getInitialFilter = (pageCtx: PageCtx): articleModel.FilterInit => ({

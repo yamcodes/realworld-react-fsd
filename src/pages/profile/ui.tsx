@@ -1,21 +1,40 @@
+import { useEffect } from 'react';
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
+import { ArticlePreview } from '~entities/article';
+import { ProfileCard } from '~entities/profile';
+import { Button } from '~shared/ui/button';
+import { FavoriteToggler } from '~widgets/favorite-toggler';
 import { MainArticleList } from '~widgets/main-article-list';
-import {
-  ProfileInfoAnon,
-  ProfileInfoAuth,
-  ProfileInfoOwner,
-} from '~widgets/profile-info';
+import { ProfileInfo } from '~widgets/profile-info';
 import { $$profilePage, PageCtx } from './model';
 
 export function ProfilePage() {
   const profileCtx = useUnit($$profilePage.$profileCtx);
   const pageCtx = useUnit($$profilePage.$pageCtx);
+  const unmounted = useUnit($$profilePage.unmounted);
+
+  useEffect(() => unmounted, [unmounted]);
 
   return (
     <div className="profile-page">
-      {profileCtx === 'auth' && (
+      <ProfileInfo
+        $$model={$$profilePage.$$profileInfo}
+        renderProfile={(profile) => (
+          <ProfileCard
+            profile={profile}
+            actions={
+              <>
+                {profileCtx === 'anon' && <Button>anon</Button>}
+                {profileCtx === 'owner' && <Button>owner</Button>}
+                {profileCtx === 'auth' && <Button>auth</Button>}
+              </>
+            }
+          />
+        )}
+      />
+      {/* {profileCtx === 'auth' && (
         <ProfileInfoAuth $$model={$$profilePage.$$profileInfo.auth} />
       )}
       {profileCtx === 'owner' && (
@@ -23,14 +42,32 @@ export function ProfilePage() {
       )}
       {profileCtx === 'anon' && (
         <ProfileInfoAnon $$model={$$profilePage.$$profileInfo.anon} />
-      )}
+      )} */}
 
       <div className="container">
         <div className="row">
           <div className="col-xs-12 col-md-10 offset-md-1">
             <ArticlesFeedNavigation pageCtx={pageCtx!} />
 
-            <MainArticleList $$model={$$profilePage.$$mainArticleList} />
+            <MainArticleList
+              $$model={$$profilePage.$$mainArticleList}
+              renderArticle={(article) => (
+                <ArticlePreview
+                  article={article}
+                  actions={
+                    <FavoriteToggler
+                      article={article}
+                      $$favoriteModel={
+                        $$profilePage.$$mainArticleList.$$favoriteArticle
+                      }
+                      $$unfavoriteModel={
+                        $$profilePage.$$mainArticleList.$$unfavoriteArticle
+                      }
+                    />
+                  }
+                />
+              )}
+            />
           </div>
         </div>
       </div>

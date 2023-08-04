@@ -60,3 +60,13 @@ export const deleteArticleFavoriteFx = attach({
     return mapArticle(response.data.article);
   },
 });
+
+type GetArticleParams = { slug: string; params?: RequestParams };
+
+export const getArticleFx = attach({
+  source: $ctx,
+  effect: async (ctx, { slug, params }: GetArticleParams) => {
+    const response = await ctx.restClient.articles.getArticle(slug, params);
+    return mapArticle(response.data.article);
+  },
+});

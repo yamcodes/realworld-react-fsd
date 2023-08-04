@@ -1,31 +1,30 @@
-import { createEvent, sample } from 'effector';
+import { createEvent, createStore } from 'effector';
+import { debug } from 'patronum';
 import { Profile } from '~entities/profile';
 import { $$sessionModel, User } from '~entities/session';
-import { createNavigateMobel } from '../lib';
+import { ProfileInfoModel } from './types';
 
-export type ProfileInfoOwnerModel = ReturnType<typeof createOwnerModel>;
-
-export function createOwnerModel() {
+export function createOwnerModel(): ProfileInfoModel {
   const init = createEvent();
   const unmounted = createEvent();
-  const navigateToSettings = createEvent();
-
-  const $$navigateToSettings = createNavigateMobel({ path: '/settings' });
+  const reset = createEvent();
 
   const $profile = $$sessionModel.$visitor.map((visitor) =>
     visitor ? mapVisitor(visitor) : null,
   );
 
-  sample({
-    clock: navigateToSettings,
-    target: $$navigateToSettings.navigate,
-  });
+  const $pending = createStore(false);
+  const $error = createStore<unknown>(null);
+
+  debug({ trace: true }, $profile);
 
   return {
     init,
     unmounted,
-    navigateToSettings,
+    reset,
     $profile,
+    $pending,
+    $error,
   };
 }
 

@@ -1,41 +1,29 @@
-import { combine, createEvent, restore } from 'effector';
-import { $$sessionModel } from '~entities/session';
+import { createEvent, sample } from 'effector';
 import { createLoaderEffect } from '~shared/lib/router';
-import { Access } from '~widgets/user-profile-card';
+import { articleModel } from '~widgets/article';
 
-const createProfilePageModel = () => {
-  const routeOpened = createEvent<string | null>();
-  const pageUnmounted = createEvent();
+const createModel = () => {
+  const opened = createEvent<string>();
+  const unmounted = createEvent();
 
   const loaderFx = createLoaderEffect(async (args) => {
-    routeOpened(args.params?.username || null);
+    const slug = args.params!.slug!;
+    opened(slug);
     return null;
   });
 
-  const $username = restore(routeOpened, null);
-  const $user = combine(
-    [$username, $$sessionModel.$visitor],
-    ([username, visitor]): Access => {
-      switch (true) {
-        case !visitor:
-          return { access: 'anonymous', username };
+  const $$article = articleModel.createModel();
 
-        case visitor && visitor.username === username:
-          return { access: 'authorized', username };
-
-        case visitor && visitor.username !== username:
-          return { access: 'authenticated', username };
-
-        default:
-          throw new Error('Unexpected error');
-      }
-    },
-  );
+  sample({
+    clock: opened,
+    target: $$article.init,
+  });
 
   return {
     loaderFx,
-    pageUnmounted,
+    unmounted,
+    $$article,
   };
 };
 
-export const { loaderFx, ...$$profilePage } = createProfilePageModel();
+export const { loaderFx, ...$$articlePage } = createModel();

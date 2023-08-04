@@ -1,15 +1,16 @@
-import { createQuery, update } from '@farfetched/core';
+import { createQuery } from '@farfetched/core';
 import { Store, createEvent, sample } from 'effector';
+import { debug } from 'patronum';
 import { profileApi } from '~entities/profile';
-import { followModel, unfollowModel } from '~features/profile';
-
-export type ProfileInfoAuthModel = ReturnType<typeof createAuthModel>;
+import { ProfileInfoModel } from './types';
 
 type ProfileInfoAuthConfig = {
   $username: Store<string | null>;
 };
 
-export function createAuthModel(config: ProfileInfoAuthConfig) {
+export function createAuthModel(
+  config: ProfileInfoAuthConfig,
+): ProfileInfoModel {
   const { $username } = config;
 
   const init = createEvent();
@@ -21,52 +22,12 @@ export function createAuthModel(config: ProfileInfoAuthConfig) {
     name: 'profileQuery',
   });
 
-  const $$followProfile = followModel.createModel({
-    $profile: profileQuery.$data,
-  });
-  const $$unfollowProfile = unfollowModel.createModel({
-    $profile: profileQuery.$data,
-  });
-
   sample({
     clock: init,
     source: $username,
     filter: Boolean,
     fn: (username) => ({ username, params: { secure: true } }),
     target: profileQuery.start,
-  });
-
-  update(profileQuery, {
-    on: $$followProfile.followProfileMutation,
-    by: {
-      success: ({ mutation }) => ({
-        result: mutation.result,
-      }),
-      failure: ({ mutation }) => ({
-        error: mutation.error,
-      }),
-    },
-  });
-
-  update(profileQuery, {
-    on: $$unfollowProfile.unfollowProfileMutation,
-    by: {
-      success: ({ mutation }) => ({
-        result: mutation.result,
-        // refetch: true,
-      }),
-      failure: ({ mutation }) => ({
-        error: mutation.error,
-      }),
-    },
-  });
-
-  sample({
-    clock: [
-      $$followProfile.optimisticallyUpdate,
-      $$unfollowProfile.optimisticallyUpdate,
-    ],
-    target: profileQuery.$data,
   });
 
   sample({
@@ -79,11 +40,18 @@ export function createAuthModel(config: ProfileInfoAuthConfig) {
     target: reset,
   });
 
+  const $profile = profileQuery.$data;
+  const { $pending } = profileQuery;
+  const { $error } = profileQuery;
+
+  debug({ trace: true }, $profile);
+
   return {
     init,
     unmounted,
-    $$followProfile,
-    $$unfollowProfile,
-    profileQuery,
+    reset,
+    $profile,
+    $pending,
+    $error,
   };
 }

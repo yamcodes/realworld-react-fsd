@@ -38,10 +38,10 @@ export async function init() {
 
   const scope = fork();
 
-  // attachReduxDevTools({
-  //   name: 'Effector DevTools',
-  //   scope,
-  // });
+  attachReduxDevTools({
+    name: 'Effector DevTools',
+    scope,
+  });
 
   // eslint-disable-next-line no-restricted-syntax
   for await (const initialize of initializers) {

@@ -13,7 +13,7 @@ import { $$registerRoute } from '~pages/register';
 import { $$settingsRoute } from '~pages/settings';
 
 const mainRouteModels = [
-  // $$articleRoute,
+  $$articleRoute,
   // $$editorRoute,
   $$homeRoute,
   $$loginRoute,
