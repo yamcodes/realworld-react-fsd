@@ -4,10 +4,10 @@ import { $$sessionModel } from '~entities/session';
 import { MainArticleList } from '~widgets/main-article-list';
 import { PopularTags } from '~widgets/popular-tags';
 import { UserArticleList } from '~widgets/user-article-list';
-import { $$homePage, HomePageModel } from './model';
+import { $$homePage } from './model';
 
 export function HomePage() {
-  const userFeed = useUnit($$homePage.$userFeed);
+  const activeTab = useUnit($$homePage.$activeTab);
 
   return (
     <div className="home-page">
@@ -21,13 +21,13 @@ export function HomePage() {
       <div className="container page">
         <div className="row">
           <div className="col-md-9">
-            <ArticlesFeedNavigation $$model={$$homePage} />
+            <ArticlesFeedTabs />
 
-            {userFeed && (
+            {activeTab.userFeed && (
               <UserArticleList $$model={$$homePage.$$userArticleList} />
             )}
 
-            {!userFeed && (
+            {(activeTab.globalFeed || activeTab.tagFeed) && (
               <MainArticleList $$model={$$homePage.$$mainArticleList} />
             )}
           </div>
@@ -41,19 +41,13 @@ export function HomePage() {
   );
 }
 
-type ArticlesFeedNavigationProps = {
-  $$model: HomePageModel;
-};
-
-function ArticlesFeedNavigation(props: ArticlesFeedNavigationProps) {
-  const { $$model } = props;
-
+function ArticlesFeedTabs() {
   const auth = useUnit($$sessionModel.$visitor);
-  const filter = useUnit($$model.$$filterModel.$query);
-  const filterBy = useUnit($$model.$$filterModel.filterBy);
-  const userFeed = useUnit($$model.$userFeed);
+  const activeTab = useUnit($$homePage.$activeTab);
+  const tab = useUnit($$homePage.tab);
 
-  const userFeedClicked = useUnit($$model.userFeedClicked);
+  const onUserFeedClicked = () => tab.userFeed();
+  const onGlobalFeedClicked = () => tab.globalFeed();
 
   return (
     <div className="feed-toggle">
@@ -61,9 +55,9 @@ function ArticlesFeedNavigation(props: ArticlesFeedNavigationProps) {
         {auth && (
           <li className="nav-item">
             <button
-              className={cn('nav-link', { active: userFeed })}
+              className={cn('nav-link', { active: activeTab.userFeed })}
               type="button"
-              onClick={userFeedClicked}
+              onClick={onUserFeedClicked}
             >
               Your Feed
             </button>
@@ -71,20 +65,17 @@ function ArticlesFeedNavigation(props: ArticlesFeedNavigationProps) {
         )}
         <li className="nav-item">
           <button
-            className={cn('nav-link', { active: !userFeed && !filter })}
+            className={cn('nav-link', { active: activeTab.globalFeed })}
             type="button"
-            onClick={() => filterBy.all()}
+            onClick={onGlobalFeedClicked}
           >
             Global Feed
           </button>
         </li>
-        {filter?.tag && (
+        {activeTab?.tagFeed && (
           <li className="nav-item">
-            <button
-              className={cn('nav-link', { active: !userFeed && filter.tag })}
-              type="button"
-            >
-              #{filter.tag}
+            <button className="nav-link active" type="button">
+              #{activeTab.tagFeed}
             </button>
           </li>
         )}

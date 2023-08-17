@@ -1,39 +1,66 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEvent, sample, createStore, createApi } from 'effector';
 import { articleModel } from '~entities/article';
+import { $$sessionModel } from '~entities/session';
 import { createLoaderEffect } from '~shared/lib/router';
 import { mainArticleListModel } from '~widgets/main-article-list';
 import { popularTagsModel } from '~widgets/popular-tags';
 import { userArticleListModel } from '~widgets/user-article-list';
+
+type Tab = {
+  userFeed?: boolean;
+  globalFeed?: boolean;
+  tagFeed?: string;
+};
 
 export type HomePageModel = Omit<ReturnType<typeof createModel>, 'loaderFx'>;
 
 const createModel = () => {
   const opened = createEvent();
   const unmounted = createEvent();
-  const userFeedClicked = createEvent();
 
   const loaderFx = createLoaderEffect(async () => {
     opened();
     return null;
   });
 
-  const $$filterModel = articleModel.createFilterModel();
+  const $activeTab = createStore<Tab>({ globalFeed: true }).reset(opened);
 
-  const $userFeed = createStore(false)
-    .on(userFeedClicked, () => true)
-    .on($$filterModel.filterChanged, () => false)
-    .reset(opened);
+  const tab = createApi($activeTab, {
+    userFeed: () => ({ userFeed: true }),
+    globalFeed: () => ({ globalFeed: true }),
+    tagFeed: (_, tag: string) => ({ tagFeed: tag }),
+  });
+
+  const $$popularTags = popularTagsModel.createModel();
+
+  sample({
+    clock: opened,
+    target: $$popularTags.init,
+  });
+
+  const $$filterModel = articleModel.createFilterModel();
 
   sample({
     clock: opened,
     target: $$filterModel.init,
   });
 
-  const $$userArticleList = userArticleListModel.createModel();
+  sample({
+    clock: tab.userFeed,
+    source: $$sessionModel.$visitor,
+    filter: Boolean,
+    fn: ({ username }) => username,
+    target: $$filterModel.filterBy.author,
+  });
 
   sample({
-    clock: userFeedClicked,
-    target: $$userArticleList.init,
+    clock: tab.globalFeed,
+    target: $$filterModel.filterBy.all,
+  });
+
+  sample({
+    clock: $$popularTags.tagClicked,
+    target: [$$filterModel.filterBy.tag, tab.tagFeed],
   });
 
   const $$mainArticleList = mainArticleListModel.createModel({
@@ -41,27 +68,22 @@ const createModel = () => {
   });
 
   sample({
-    clock: [opened, $$filterModel.filterChanged],
+    clock: [opened, tab.globalFeed, tab.tagFeed],
     target: $$mainArticleList.init,
   });
 
-  const $$popularTags = popularTagsModel.createModel();
+  const $$userArticleList = userArticleListModel.createModel();
 
   sample({
-    clock: opened,
-    target: [$$popularTags.init],
-  });
-
-  sample({
-    clock: $$popularTags.tagClicked,
-    target: $$filterModel.filterBy.tag,
+    clock: tab.userFeed,
+    target: $$userArticleList.init,
   });
 
   return {
     loaderFx,
     unmounted,
-    userFeedClicked,
-    $userFeed,
+    tab,
+    $activeTab,
     $$filterModel,
     $$userArticleList,
     $$mainArticleList,

@@ -1,5 +1,4 @@
 import { combine, createEvent, restore, sample } from 'effector';
-import { debug } from 'patronum';
 import { articleModel } from '~entities/article';
 import { $$sessionModel, User } from '~entities/session';
 import { createLoaderEffect } from '~shared/lib/router';
@@ -51,9 +50,6 @@ const createModel = () => {
       }
     },
   );
-
-  debug($username);
-  debug($profileCtx);
 
   const $$profileInfo = {
     anon: profileInfoModel.createAnonModel({ $username }),
