@@ -1,16 +1,15 @@
 import { createQuery } from '@farfetched/core';
 import { Store, createEvent, sample } from 'effector';
-import { debug } from 'patronum';
 import { profileApi } from '~entities/profile';
-import { ProfileInfoModel } from './types';
+import { followModel, unfollowModel } from '~features/profile';
 
-type ProfileInfoAuthConfig = {
+type AuthConfig = {
   $username: Store<string | null>;
 };
 
-export function createAuthModel(
-  config: ProfileInfoAuthConfig,
-): ProfileInfoModel {
+export type AuthModel = ReturnType<typeof createAuthModel>;
+
+export function createAuthModel(config: AuthConfig) {
   const { $username } = config;
 
   const init = createEvent();
@@ -44,7 +43,33 @@ export function createAuthModel(
   const { $pending } = profileQuery;
   const { $error } = profileQuery;
 
-  debug({ trace: true }, $profile);
+  const $$followProfile = followModel.createModel();
+  const $$unfollowProfile = unfollowModel.createModel();
+
+  sample({
+    clock: [
+      $$followProfile.optimisticallyUpdate,
+      $$unfollowProfile.optimisticallyUpdate,
+    ],
+    target: $profile,
+  });
+
+  sample({
+    clock: [
+      $$followProfile.followProfileMutation.finished.failure,
+      $$unfollowProfile.unfollowProfileMutation.finished.failure,
+    ],
+    fn: ({ error }) => ({ error }),
+    target: $error,
+  });
+
+  sample({
+    clock: [
+      $$followProfile.followProfileMutation.finished.finally,
+      $$unfollowProfile.unfollowProfileMutation.finished.finally,
+    ],
+    target: init,
+  });
 
   return {
     init,
@@ -53,5 +78,7 @@ export function createAuthModel(
     $profile,
     $pending,
     $error,
+    $$followProfile,
+    $$unfollowProfile,
   };
 }

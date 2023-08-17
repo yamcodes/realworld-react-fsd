@@ -40,33 +40,46 @@ const createModel = () => {
         case isAuth(visitor, username):
           return 'auth';
 
+        case isAnon(visitor, username):
+          return 'anon';
+
         case isOwner(visitor, username):
           return 'owner';
 
         default:
-          return 'anon';
-
-        // case isAnon(visitor, username):
-        //   return 'anon';
-
-        // default:
-        //   return null;
+          return null;
       }
     },
   );
 
-  debug({ trace: true }, $profileCtx);
+  debug($username);
+  debug($profileCtx);
 
-  const $$profileInfo = profileInfoModel.createModel({
-    $profileCtx,
-    $username,
+  const $$profileInfo = {
+    anon: profileInfoModel.createAnonModel({ $username }),
+    auth: profileInfoModel.createAuthModel({ $username }),
+    owner: profileInfoModel.createOwnerModel(),
+  };
+
+  sample({
+    clock: opened,
+    source: $profileCtx,
+    filter: (ctx) => ctx === 'anon',
+    target: $$profileInfo.anon.init,
   });
 
   sample({
     clock: opened,
-    source: $username,
-    filter: Boolean,
-    target: $$profileInfo.init,
+    source: $profileCtx,
+    filter: (ctx) => ctx === 'auth',
+    target: $$profileInfo.auth.init,
+  });
+
+  sample({
+    clock: opened,
+    source: $profileCtx,
+    filter: (ctx) => ctx === 'owner',
+    target: $$profileInfo.owner.init,
   });
 
   const $$filterModel = articleModel.createFilterModel();
@@ -101,13 +114,13 @@ const createModel = () => {
 };
 
 const isAuth = (visitor: User | null, username: string | null) =>
-  visitor && username && visitor.username !== username;
+  Boolean(visitor && username && visitor.username !== username);
 
 const isOwner = (visitor: User | null, username: string | null) =>
-  visitor && visitor.username === username;
+  Boolean(visitor && username && visitor.username === username);
 
 const isAnon = (visitor: User | null, username: string | null) =>
-  visitor && visitor.username === username;
+  Boolean(!visitor && username);
 
 const getInitialFilter = (pageCtx: PageCtx): articleModel.FilterInit => ({
   key: pageCtx.path,

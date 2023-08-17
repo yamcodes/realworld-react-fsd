@@ -1,4 +1,4 @@
-import { createQuery, update } from '@farfetched/core';
+import { createQuery } from '@farfetched/core';
 import { createEvent, createStore, sample, combine } from 'effector';
 import { equals, and, not } from 'patronum';
 import { Article, articleApi, articleModel } from '~entities/article';
@@ -15,6 +15,7 @@ export function createModel(config: MainArticleListConfgi) {
   const { $filterQuery } = config;
 
   const init = createEvent();
+  const update = createEvent();
   const reset = createEvent();
   const unmounted = createEvent();
 
@@ -26,8 +27,6 @@ export function createModel(config: MainArticleListConfgi) {
   });
 
   const $$pagination = articleModel.createPaginationModel();
-  const $$favoriteArticle = favoriteModel.createModel();
-  const $$unfavoriteArticle = unfavoriteModel.createModel();
 
   const $query = combine(
     $$pagination.$query,
@@ -45,30 +44,30 @@ export function createModel(config: MainArticleListConfgi) {
     .on($$pagination.nextPage, () => true)
     .on(articlesQuery.finished.finally, () => false);
 
-  const $articles = createStore<Array<Article>>([])
-    .on(articlesQuery.finished.success, (prevArticles, data) => [
-      ...prevArticles,
-      ...data.result.articles,
-    ])
-    .on(
-      [
-        $$favoriteArticle.optimisticallyUpdate,
-        $$unfavoriteArticle.optimisticallyUpdate,
-      ],
-      (articles, article) =>
-        articles.map((a) => (a.slug === article?.slug ? article : a)),
-    )
-    .reset(reset);
+  const { $error } = articlesQuery;
 
-  const $articlesCount = createStore<number | null>(null)
-    .on(articlesQuery.finished.success, (_, data) => data.result.articlesCount)
-    .reset(reset);
+  const $data = createStore<{
+    articles: Article[];
+    articlesCount: number;
+  }>({ articles: [], articlesCount: 0 }).reset(reset);
 
-  const $articlesReceived = $articles.map((articles) => articles.length);
+  const $articles = $data.map((data) => data.articles);
+  const $articlesCount = $data.map((data) => data.articlesCount);
+  const $articlesReceived = $data.map((data) => data.articles.length);
 
   const $emptyData = and(articlesQuery.$succeeded, not($articlesReceived));
   const $hasNextPage = not(equals($articlesCount, $articlesReceived));
   const $canFetchMore = and(not($pendingInitial), $hasNextPage);
+
+  sample({
+    clock: init,
+    target: reset,
+  });
+
+  sample({
+    clock: reset,
+    target: [$$pagination.reset, articlesQuery.reset],
+  });
 
   sample({
     clock: init,
@@ -77,7 +76,17 @@ export function createModel(config: MainArticleListConfgi) {
       auth: $$sessionModel.$visitor,
     },
     fn: ({ query, auth }) => ({ query, params: { secure: !!auth } }),
-    target: [reset, articlesQuery.start, fetchInitial],
+    target: [articlesQuery.start, fetchInitial],
+  });
+
+  sample({
+    clock: update,
+    source: {
+      query: $query.map((q) => q.query),
+      auth: $$sessionModel.$visitor,
+    },
+    fn: ({ query, auth }) => ({ query, params: { secure: !!auth } }),
+    target: articlesQuery.start,
   });
 
   sample({
@@ -90,50 +99,52 @@ export function createModel(config: MainArticleListConfgi) {
     target: articlesQuery.start,
   });
 
-  update(articlesQuery, {
-    on: $$favoriteArticle.favoriteArticleMutation,
-    by: {
-      success: {
-        source: articlesQuery.$data,
-        fn: ({ mutation }, data) => ({
-          result: {
-            articles: data!.articles.map((a) =>
-              a.slug === mutation.result.slug ? mutation.result : a,
-            ),
-            articlesCount: data!.articlesCount,
-          },
-        }),
-      },
-      failure: ({ mutation }) => ({
-        error: mutation.error,
-      }),
+  sample({
+    clock: articlesQuery.finished.success,
+    source: {
+      prevData: $data,
+      curData: articlesQuery.$data,
     },
+    fn: ({ prevData, curData }) => ({
+      articles: [...prevData.articles, ...(curData?.articles || [])],
+      articlesCount: curData?.articlesCount || 0,
+    }),
+    target: $data,
   });
 
-  update(articlesQuery, {
-    on: $$unfavoriteArticle.unfavoriteArticleMutation,
-    by: {
-      success: {
-        source: articlesQuery.$data,
-        fn: ({ mutation }, data) => ({
-          result: {
-            articles: data!.articles.map((a) =>
-              a.slug === mutation.result.slug ? mutation.result : a,
-            ),
-            articlesCount: data!.articlesCount,
-          },
-        }),
-      },
-      failure: ({ mutation }) => ({
-        error: mutation.error,
-      }),
+  const $$favoriteArticle = favoriteModel.createModel();
+  const $$unfavoriteArticle = unfavoriteModel.createModel();
+
+  const $mutatedArticle = createStore<Article | null>(null).on(
+    [$$favoriteArticle.mutated, $$unfavoriteArticle.mutated],
+    (_, article) => article,
+  );
+
+  sample({
+    clock: [$$favoriteArticle.mutated, $$unfavoriteArticle.mutated],
+    source: {
+      data: $data,
+      mutatedArticle: $mutatedArticle,
     },
+    fn: ({ data, mutatedArticle }) => ({
+      articles: data.articles.map((article) =>
+        article.slug === mutatedArticle?.slug ? mutatedArticle : article,
+      ),
+      articlesCount: data.articlesCount,
+    }),
+    target: $data,
   });
 
   sample({
-    clock: reset,
-    target: [$$pagination.reset, articlesQuery.reset],
+    clock: [$$favoriteArticle.failure, $$unfavoriteArticle.failure],
+    target: $error,
   });
+
+  // TODO:
+  // sample({
+  //   clock: [$$favoriteArticle.settled, $$unfavoriteArticle.settled],
+  //   target: update,
+  // });
 
   return {
     init,
@@ -141,7 +152,7 @@ export function createModel(config: MainArticleListConfgi) {
     $articles,
     $pendingInitial,
     $pendingNextPage,
-    $error: articlesQuery.$error,
+    $error,
     $emptyData,
     $canFetchMore,
     $$pagination,

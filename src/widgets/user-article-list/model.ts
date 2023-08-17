@@ -2,11 +2,13 @@ import { createQuery } from '@farfetched/core';
 import { createEvent, createStore, sample } from 'effector';
 import { equals, and, not } from 'patronum';
 import { Article, articleApi, articleModel } from '~entities/article';
+import { favoriteModel, unfavoriteModel } from '~features/article';
 
 export type UserArticleListModel = Omit<ReturnType<typeof createModel>, 'init'>;
 
 export function createModel() {
   const init = createEvent();
+  const update = createEvent();
   const reset = createEvent();
   const unmounted = createEvent();
 
@@ -29,21 +31,16 @@ export function createModel() {
     .on($$pagination.nextPage, () => true)
     .on(articlesFeedQuery.finished.finally, () => false);
 
-  const $articles = createStore<Array<Article>>([])
-    .on(articlesFeedQuery.finished.success, (prevArticles, data) => [
-      ...prevArticles,
-      ...data.result.articles,
-    ])
-    .reset(reset);
+  const { $error } = articlesFeedQuery;
 
-  const $articlesCount = createStore<number | null>(null)
-    .on(
-      articlesFeedQuery.finished.success,
-      (_, data) => data.result.articlesCount,
-    )
-    .reset(reset);
+  const $data = createStore<{
+    articles: Article[];
+    articlesCount: number;
+  }>({ articles: [], articlesCount: 0 }).reset(reset);
 
-  const $articlesReceived = $articles.map((articles) => articles.length);
+  const $articles = $data.map((data) => data.articles);
+  const $articlesCount = $data.map((data) => data.articlesCount);
+  const $articlesReceived = $data.map((data) => data.articles.length);
 
   const $emptyData = and(articlesFeedQuery.$succeeded, not($articlesReceived));
   const $hasNextPage = not(equals($articlesCount, $articlesReceived));
@@ -51,8 +48,24 @@ export function createModel() {
 
   sample({
     clock: init,
+    target: reset,
+  });
+
+  sample({
+    clock: reset,
+    target: [$$pagination.reset, articlesFeedQuery.reset],
+  });
+
+  sample({
+    clock: init,
     source: $query,
-    target: [reset, articlesFeedQuery.start, fetchInitial],
+    target: [articlesFeedQuery.start, fetchInitial],
+  });
+
+  sample({
+    clock: update,
+    source: $query,
+    target: articlesFeedQuery.start,
   });
 
   sample({
@@ -62,9 +75,51 @@ export function createModel() {
   });
 
   sample({
-    clock: reset,
-    target: [$$pagination.reset, articlesFeedQuery.reset],
+    clock: articlesFeedQuery.finished.success,
+    source: {
+      prevData: $data,
+      curData: articlesFeedQuery.$data,
+    },
+    fn: ({ prevData, curData }) => ({
+      articles: [...prevData.articles, ...(curData?.articles || [])],
+      articlesCount: curData?.articlesCount || 0,
+    }),
+    target: $data,
   });
+
+  const $$favoriteArticle = favoriteModel.createModel();
+  const $$unfavoriteArticle = unfavoriteModel.createModel();
+
+  const $mutatedArticle = createStore<Article | null>(null).on(
+    [$$favoriteArticle.mutated, $$unfavoriteArticle.mutated],
+    (_, article) => article,
+  );
+
+  sample({
+    clock: [$$favoriteArticle.mutated, $$unfavoriteArticle.mutated],
+    source: {
+      data: $data,
+      mutatedArticle: $mutatedArticle,
+    },
+    fn: ({ data, mutatedArticle }) => ({
+      articles: data.articles.map((article) =>
+        article.slug === mutatedArticle?.slug ? mutatedArticle : article,
+      ),
+      articlesCount: data.articlesCount,
+    }),
+    target: $data,
+  });
+
+  sample({
+    clock: [$$favoriteArticle.failure, $$unfavoriteArticle.failure],
+    target: $error,
+  });
+
+  // TODO:
+  // sample({
+  //   clock: [$$favoriteArticle.settled, $$unfavoriteArticle.settled],
+  //   target: update,
+  // });
 
   return {
     init,
@@ -72,9 +127,11 @@ export function createModel() {
     $articles,
     $pendingInitial,
     $pendingNextPage,
-    $error: articlesFeedQuery.$error,
+    $error,
     $emptyData,
     $canFetchMore,
     $$pagination,
+    $$favoriteArticle,
+    $$unfavoriteArticle,
   };
 }

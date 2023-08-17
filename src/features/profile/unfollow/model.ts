@@ -1,17 +1,11 @@
 import { createMutation } from '@farfetched/core';
-import { Store, createEvent, sample } from 'effector';
+import { createEvent, restore, sample } from 'effector';
 import { Profile, profileApi } from '~entities/profile';
 
 export type UnfollowProfileModel = ReturnType<typeof createModel>;
 
-type UnfollowProfileConfig = {
-  $profile: Store<Profile | null>;
-};
-
-export function createModel(config: UnfollowProfileConfig) {
-  const { $profile } = config;
-
-  const unfollow = createEvent();
+export function createModel() {
+  const unfollow = createEvent<Profile>();
   const optimisticallyUpdate = createEvent<Profile>();
 
   const unfollowProfileMutation = createMutation({
@@ -19,13 +13,13 @@ export function createModel(config: UnfollowProfileConfig) {
     handler: profileApi.unfollowProfileFx,
   });
 
-  const $username = $profile.map((profile) => profile?.username);
+  const $profile = restore(unfollow, null);
 
   sample({
     clock: unfollow,
-    source: $username,
+    source: $profile,
     filter: Boolean,
-    fn: (username) => ({ username }),
+    fn: ({ username }) => ({ username }),
     target: unfollowProfileMutation.start,
   });
 
@@ -41,6 +35,5 @@ export function createModel(config: UnfollowProfileConfig) {
     unfollowProfileMutation,
     optimisticallyUpdate,
     unfollow,
-    $username,
   };
 }

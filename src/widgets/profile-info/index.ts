@@ -1,2 +1,2 @@
-export * as profileInfoModel from './model/model';
-export { ProfileInfo } from './ui';
+export * as profileInfoModel from './model';
+export * as ProfileInfo from './ui';

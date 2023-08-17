@@ -1,23 +1,18 @@
 import { Profile } from '~entities/profile';
-import {
-  FollowProfile,
-  UnfollowProfile,
-  followModel,
-  unfollowModel,
-} from '~features/profile';
+import { FollowProfile, UnfollowProfile } from '~features/profile';
+import { FollowTogglerModel } from './model';
 
 type FollowTogglerProps = {
   profile: Profile;
-  $$followModel: followModel.FollowProfileModel;
-  $$unfollowModel: unfollowModel.UnfollowProfileModel;
+  $$model: FollowTogglerModel;
 };
 
 export function FollowToggler(props: FollowTogglerProps) {
-  const { $$followModel, $$unfollowModel, profile } = props;
+  const { $$model, profile } = props;
 
   return profile.following ? (
-    <UnfollowProfile $$model={$$unfollowModel} />
+    <UnfollowProfile profile={profile} $$model={$$model.$$unfollowProfile} />
   ) : (
-    <FollowProfile $$model={$$followModel} />
+    <FollowProfile profile={profile} $$model={$$model.$$followProfile} />
   );
 }

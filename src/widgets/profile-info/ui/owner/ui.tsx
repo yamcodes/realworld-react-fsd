@@ -1,20 +1,19 @@
 import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { IoSettingsSharp } from 'react-icons/io5';
+import { Link } from 'react-router-dom';
 import { ProfileCard } from '~entities/profile';
-import { Button } from '~shared/ui/button';
-import { ProfileInfoOwnerModel } from '../../model';
+import { OwnerModel } from '../../model/ownerModel';
 
-type ProfileInfoOwnerProps = {
-  $$model: ProfileInfoOwnerModel;
+type OwnerProps = {
+  $$model: OwnerModel;
 };
 
-export function ProfileInfoOwner(props: ProfileInfoOwnerProps) {
+export function Owner(props: OwnerProps) {
   const { $$model } = props;
 
   const profile = useUnit($$model.$profile);
 
-  const navigateToSettings = useUnit($$model.navigateToSettings);
   const unmounted = useUnit($$model.unmounted);
 
   useEffect(() => unmounted, [unmounted]);
@@ -28,15 +27,13 @@ export function ProfileInfoOwner(props: ProfileInfoOwnerProps) {
               <ProfileCard
                 profile={profile}
                 actions={
-                  <Button
-                    color="secondary"
-                    variant="outline"
-                    className="action-btn"
-                    onClick={navigateToSettings}
+                  <Link
+                    to="/settings"
+                    className="btn btn-outline-secondary btn-sm action-btn"
                   >
                     <IoSettingsSharp size={14} />
                     &nbsp; Edit Profile Settings
-                  </Button>
+                  </Link>
                 }
               />
             )}

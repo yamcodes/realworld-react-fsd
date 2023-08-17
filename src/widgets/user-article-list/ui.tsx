@@ -1,8 +1,7 @@
 import { ReactNode, useEffect } from 'react';
-import { useUnit } from 'effector-react';
-import { IoHeart } from 'react-icons/io5';
-import { Link } from 'react-router-dom';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { useList, useUnit } from 'effector-react';
+import { ArticlePreview } from '~entities/article';
+import { UnfavoriteArticle, FavoriteArticle } from '~features/article';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { UserArticleListModel } from './model';
@@ -30,6 +29,25 @@ export function UserArticleList(props: UserArticleListProps) {
     $$model.$pendingNextPage,
   ]);
 
+  const articlesList = useList($$model.$articles, (article) => (
+    <ArticlePreview
+      article={article}
+      actions={
+        article.favorited ? (
+          <UnfavoriteArticle
+            article={article}
+            $$model={$$model.$$unfavoriteArticle}
+          />
+        ) : (
+          <FavoriteArticle
+            article={article}
+            $$model={$$model.$$favoriteArticle}
+          />
+        )
+      }
+    />
+  ));
+
   const loadMore = useUnit($$model.$$pagination.nextPage);
   const unmounted = useUnit($$model.unmounted);
 
@@ -49,46 +67,7 @@ export function UserArticleList(props: UserArticleListProps) {
         <ArticleWrapper>No articles are here... yet.</ArticleWrapper>
       )}
 
-      {articles &&
-        articles.map(
-          ({
-            author: { username, image },
-            title,
-            description,
-            slug,
-            createdAt,
-          }) => (
-            <div key={slug} className="article-preview">
-              <div className="article-meta">
-                <Link to={PATH_PAGE.profile.root(username)}>
-                  <img src={image} alt={username} />
-                </Link>
-                <div className="info">
-                  <Link
-                    to={PATH_PAGE.profile.root(username)}
-                    className="author"
-                  >
-                    {username}
-                  </Link>
-                  <span className="date">{createdAt}</span>
-                </div>
-                <Button
-                  color="primary"
-                  variant="outline"
-                  className="pull-xs-right"
-                  // onClick={handleFavorite}
-                >
-                  <IoHeart size={16} />
-                </Button>
-              </div>
-              <Link to={PATH_PAGE.article.slug(slug)} className="preview-link">
-                <h1>{title}</h1>
-                <p>{description}</p>
-                <span>Read more...</span>
-              </Link>
-            </div>
-          ),
-        )}
+      {articles && articlesList}
 
       {canFetchMore && (
         <div style={{ display: 'flex', justifyContent: 'center' }}>

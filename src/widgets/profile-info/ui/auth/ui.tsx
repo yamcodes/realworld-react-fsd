@@ -4,16 +4,20 @@ import { ProfileCard } from '~entities/profile';
 import { FollowProfile, UnfollowProfile } from '~features/profile';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { Spinner } from '~shared/ui/spinner';
-import { ProfileInfoAuthModel } from '../../model';
+import { AuthModel } from '../../model/authModel';
 
-type ProfileInfoAuthProps = {
-  $$model: ProfileInfoAuthModel;
+type AuthProps = {
+  $$model: AuthModel;
 };
 
-export function ProfileInfoAuth(props: ProfileInfoAuthProps) {
+export function Auth(props: AuthProps) {
   const { $$model } = props;
 
-  const { data: profile, pending, error } = useUnit($$model.profileQuery);
+  const [profile, pending, error] = useUnit([
+    $$model.$profile,
+    $$model.$pending,
+    $$model.$error,
+  ]);
 
   const unmounted = useUnit($$model.unmounted);
 
@@ -41,9 +45,15 @@ export function ProfileInfoAuth(props: ProfileInfoAuthProps) {
                 profile={profile}
                 actions={
                   profile.following ? (
-                    <UnfollowProfile $$model={$$model.$$unfollowProfile} />
+                    <UnfollowProfile
+                      $$model={$$model.$$unfollowProfile}
+                      profile={profile}
+                    />
                   ) : (
-                    <FollowProfile $$model={$$model.$$followProfile} />
+                    <FollowProfile
+                      $$model={$$model.$$followProfile}
+                      profile={profile}
+                    />
                   )
                 }
               />

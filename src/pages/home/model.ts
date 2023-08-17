@@ -21,7 +21,8 @@ const createModel = () => {
 
   const $userFeed = createStore(false)
     .on(userFeedClicked, () => true)
-    .on($$filterModel.filterChanged, () => false);
+    .on($$filterModel.filterChanged, () => false)
+    .reset(opened);
 
   sample({
     clock: opened,

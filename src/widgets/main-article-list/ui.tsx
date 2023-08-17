@@ -1,17 +1,17 @@
-import { Fragment, ReactNode, useEffect } from 'react';
-import { useUnit } from 'effector-react';
-import { Article } from '~entities/article';
+import { ReactNode, useEffect } from 'react';
+import { useList, useUnit } from 'effector-react';
+import { ArticlePreview } from '~entities/article';
+import { UnfavoriteArticle, FavoriteArticle } from '~features/article';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { MainArticleListModel } from './model';
 
 type MainArticleListProps = {
   $$model: MainArticleListModel;
-  renderArticle: (article: Article) => ReactNode;
 };
 
 export function MainArticleList(props: MainArticleListProps) {
-  const { $$model, renderArticle } = props;
+  const { $$model } = props;
 
   const [
     articles,
@@ -28,6 +28,25 @@ export function MainArticleList(props: MainArticleListProps) {
     $$model.$canFetchMore,
     $$model.$pendingNextPage,
   ]);
+
+  const articlesList = useList($$model.$articles, (article) => (
+    <ArticlePreview
+      article={article}
+      actions={
+        article.favorited ? (
+          <UnfavoriteArticle
+            article={article}
+            $$model={$$model.$$unfavoriteArticle}
+          />
+        ) : (
+          <FavoriteArticle
+            article={article}
+            $$model={$$model.$$favoriteArticle}
+          />
+        )
+      }
+    />
+  ));
 
   const loadMore = useUnit($$model.$$pagination.nextPage);
   const unmounted = useUnit($$model.unmounted);
@@ -48,10 +67,7 @@ export function MainArticleList(props: MainArticleListProps) {
         <ArticleWrapper>No articles are here... yet.</ArticleWrapper>
       )}
 
-      {articles &&
-        articles.map((article) => (
-          <Fragment key={article.slug}>{renderArticle(article)}</Fragment>
-        ))}
+      {articles && articlesList}
 
       {canFetchMore && (
         <div style={{ display: 'flex', justifyContent: 'center' }}>

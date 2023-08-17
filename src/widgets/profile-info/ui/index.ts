@@ -1,3 +1,3 @@
-export { ProfileInfoAnon } from './profile-info-anon/ui';
-export { ProfileInfoAuth } from './profile-info-auth/ui';
-export { ProfileInfoOwner } from './profile-info-owner/ui';
+export { Anon } from './anon/ui';
+export { Auth } from './auth/ui';
+export { Owner } from './owner/ui';

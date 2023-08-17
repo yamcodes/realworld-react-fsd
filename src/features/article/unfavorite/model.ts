@@ -6,7 +6,9 @@ export type UnfavoriteArticleModel = ReturnType<typeof createModel>;
 
 export function createModel() {
   const unfavorite = createEvent<Article>();
-  const optimisticallyUpdate = createEvent<Article>();
+  const mutated = createEvent<Article>();
+  const failure = createEvent<unknown>();
+  const settled = createEvent();
 
   const unfavoriteArticleMutation = createMutation({
     handler: articleApi.deleteArticleFavoriteFx,
@@ -33,12 +35,24 @@ export function createModel() {
       favorited: false,
       favoritesCount: article.favoritesCount - 1,
     }),
-    target: optimisticallyUpdate,
+    target: mutated,
+  });
+
+  sample({
+    clock: unfavoriteArticleMutation.finished.failure,
+    fn: ({ error }) => ({ error }),
+    target: failure,
+  });
+
+  sample({
+    clock: unfavoriteArticleMutation.finished.finally,
+    target: settled,
   });
 
   return {
-    unfavoriteArticleMutation,
-    optimisticallyUpdate,
     unfavorite,
+    mutated,
+    failure,
+    settled,
   };
 }

@@ -1,17 +1,18 @@
 import { ReactNode, useEffect } from 'react';
 import { useUnit } from 'effector-react';
-import { Profile } from '~entities/profile';
+import { IoAdd } from 'react-icons/io5';
+import { Link } from 'react-router-dom';
+import { ProfileCard } from '~entities/profile';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { Spinner } from '~shared/ui/spinner';
-import { ProfileInfoModel } from './model/types';
+import { AnonModel } from '../../model/anonModel';
 
-type ProfileInfoProps = {
-  $$model: ProfileInfoModel;
-  renderProfile: (profile: Profile) => ReactNode;
+type AnonProps = {
+  $$model: AnonModel;
 };
 
-export function ProfileInfo(props: ProfileInfoProps) {
-  const { $$model, renderProfile } = props;
+export function Anon(props: AnonProps) {
+  const { $$model } = props;
 
   const [profile, pending, error] = useUnit([
     $$model.$profile,
@@ -27,7 +28,7 @@ export function ProfileInfo(props: ProfileInfoProps) {
     <div className="user-info">
       <div className="container">
         <div className="row">
-          {pending && !profile && (
+          {pending && (
             <ProfileWrapper>
               <Spinner />
             </ProfileWrapper>
@@ -40,7 +41,20 @@ export function ProfileInfo(props: ProfileInfoProps) {
           )}
 
           <div className="col-xs-12 col-md-10 offset-md-1">
-            {profile && renderProfile(profile)}
+            {profile && (
+              <ProfileCard
+                profile={profile}
+                actions={
+                  <Link
+                    to="/login"
+                    className="btn btn-outline-secondary btn-sm action-btn"
+                  >
+                    <IoAdd size={16} />
+                    &nbsp; Follow {profile.username}
+                  </Link>
+                }
+              />
+            )}
           </div>
         </div>
       </div>

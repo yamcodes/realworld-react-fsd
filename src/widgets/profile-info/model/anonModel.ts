@@ -1,16 +1,14 @@
 import { createQuery } from '@farfetched/core';
 import { Store, createEvent, sample } from 'effector';
-import { debug } from 'patronum';
 import { profileApi } from '~entities/profile';
-import { ProfileInfoModel } from './types';
 
-type ProfileInfoAnonConfig = {
+type AnonConfig = {
   $username: Store<string | null>;
 };
 
-export function createAnonModel(
-  config: ProfileInfoAnonConfig,
-): ProfileInfoModel {
+export type AnonModel = ReturnType<typeof createAnonModel>;
+
+export function createAnonModel(config: AnonConfig) {
   const { $username } = config;
 
   const init = createEvent();
@@ -43,8 +41,6 @@ export function createAnonModel(
   const $profile = profileQuery.$data;
   const { $pending } = profileQuery;
   const { $error } = profileQuery;
-
-  debug({ trace: true }, $profile);
 
   return {
     init,

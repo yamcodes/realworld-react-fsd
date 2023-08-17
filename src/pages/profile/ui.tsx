@@ -3,8 +3,6 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 import { ArticlePreview } from '~entities/article';
-import { ProfileCard } from '~entities/profile';
-import { Button } from '~shared/ui/button';
 import { FavoriteToggler } from '~widgets/favorite-toggler';
 import { MainArticleList } from '~widgets/main-article-list';
 import { ProfileInfo } from '~widgets/profile-info';
@@ -19,30 +17,17 @@ export function ProfilePage() {
 
   return (
     <div className="profile-page">
-      <ProfileInfo
-        $$model={$$profilePage.$$profileInfo}
-        renderProfile={(profile) => (
-          <ProfileCard
-            profile={profile}
-            actions={
-              <>
-                {profileCtx === 'anon' && <Button>anon</Button>}
-                {profileCtx === 'owner' && <Button>owner</Button>}
-                {profileCtx === 'auth' && <Button>auth</Button>}
-              </>
-            }
-          />
-        )}
-      />
-      {/* {profileCtx === 'auth' && (
-        <ProfileInfoAuth $$model={$$profilePage.$$profileInfo.auth} />
-      )}
-      {profileCtx === 'owner' && (
-        <ProfileInfoOwner $$model={$$profilePage.$$profileInfo.owner} />
-      )}
       {profileCtx === 'anon' && (
-        <ProfileInfoAnon $$model={$$profilePage.$$profileInfo.anon} />
-      )} */}
+        <ProfileInfo.Anon $$model={$$profilePage.$$profileInfo.anon} />
+      )}
+
+      {profileCtx === 'auth' && (
+        <ProfileInfo.Auth $$model={$$profilePage.$$profileInfo.auth} />
+      )}
+
+      {profileCtx === 'owner' && (
+        <ProfileInfo.Owner $$model={$$profilePage.$$profileInfo.owner} />
+      )}
 
       <div className="container">
         <div className="row">
