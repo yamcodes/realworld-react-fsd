@@ -49,7 +49,12 @@ export function ArticlePage() {
             />
           )}
 
-          {articleCtx === 'owner' && <ArticleMeta.Owner article={article} />}
+          {articleCtx === 'owner' && (
+            <ArticleMeta.Owner
+              article={article}
+              $$deleteArticleModel={$$articlePage.$$deleteArticle}
+            />
+          )}
         </div>
       </div>
 
@@ -84,7 +89,12 @@ export function ArticlePage() {
             />
           )}
 
-          {articleCtx === 'owner' && <ArticleMeta.Owner article={article} />}
+          {articleCtx === 'owner' && (
+            <ArticleMeta.Owner
+              article={article}
+              $$deleteArticleModel={$$articlePage.$$deleteArticle}
+            />
+          )}
         </div>
 
         <div className="row">

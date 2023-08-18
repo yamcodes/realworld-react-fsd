@@ -2,7 +2,11 @@ import { createQuery } from '@farfetched/core';
 import { createEvent, sample, restore, combine, createStore } from 'effector';
 import { Article, articleApi } from '~entities/article';
 import { $$sessionModel, User } from '~entities/session';
-import { favoriteModel, unfavoriteModel } from '~features/article';
+import {
+  deleteArticleModel,
+  favoriteModel,
+  unfavoriteModel,
+} from '~features/article';
 import { followModel, unfollowModel } from '~features/profile';
 import { createLoaderEffect } from '~shared/lib/router';
 
@@ -60,6 +64,8 @@ const createModel = () => {
   const $$favoriteArticle = favoriteModel.createModel();
   const $$unfavoriteArticle = unfavoriteModel.createModel();
 
+  const $$deleteArticle = deleteArticleModel.createModel();
+
   const $mutatedArticle = createStore<Article | null>(null)
     .on(
       [$$followProfile.mutated, $$unfollowProfile.mutated],
@@ -111,6 +117,7 @@ const createModel = () => {
     $$unfollowProfile,
     $$favoriteArticle,
     $$unfavoriteArticle,
+    $$deleteArticle,
   };
 };
 

@@ -14,6 +14,13 @@ export interface Article {
   author: Profile;
 }
 
+export type NewArticle = {
+  title: string;
+  description: string;
+  body: string;
+  tagList?: string[];
+};
+
 export type Query = {
   tag?: string;
   author?: string;

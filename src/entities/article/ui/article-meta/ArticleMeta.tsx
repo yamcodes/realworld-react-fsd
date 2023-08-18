@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
+import { Article } from '~entities/article';
 import { PATH_PAGE } from '~shared/lib/react-router';
-import { Article } from '../../api';
 
 type ArticleMetaProps = {
   article: Article;

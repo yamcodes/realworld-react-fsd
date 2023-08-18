@@ -1,1 +1,2 @@
-export { DeleteArticleButton } from './ui/delete-article-button/DeleteArticleButton';
+export * as deleteArticleModel from './model';
+export { DeleteArticle } from './ui';

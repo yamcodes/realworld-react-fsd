@@ -7,14 +7,14 @@ import { $$editorRoute } from '~pages/editor';
 import { $$homeRoute } from '~pages/home';
 import { MainLayout } from '~pages/layouts';
 import { $$loginRoute } from '~pages/login';
-import { $$page404Route } from '~pages/page-404';
+// import { $$page404Route } from '~pages/page-404';
 import { $$profileRoute } from '~pages/profile';
 import { $$registerRoute } from '~pages/register';
 import { $$settingsRoute } from '~pages/settings';
 
 const mainRouteModels = [
   $$articleRoute,
-  // $$editorRoute,
+  ...$$editorRoute,
   $$homeRoute,
   $$loginRoute,
   // $$page404Route,

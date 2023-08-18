@@ -1,1 +1,1 @@
-export { useCreateArticle } from './api/createArticle';
+export * as createArticleModel from './model';
