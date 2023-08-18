@@ -1,19 +1,12 @@
 import { useUnit } from 'effector-react';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
+import { ArticleMeta } from '~widgets/article-meta';
 import { $$articlePage } from './model';
 
 export function ArticlePage() {
-  // const { slug } = useParams();
-
-  // const user = sessionModel.useCurrentUser();
-  // const user = false;
-
-  const {
-    data: article,
-    pending,
-    error,
-  } = useUnit($$articlePage.$$article.articleQuery);
+  const { data: article, pending, error } = useUnit($$articlePage.articleQuery);
+  const articleCtx = useUnit($$articlePage.$articleCtx);
 
   if (pending)
     return (
@@ -43,14 +36,20 @@ export function ArticlePage() {
       <div className="banner">
         <div className="container">
           <h1>{title}</h1>
-          {/*
-          {isCurrentUser && (
-            <CurrentUserArticleMeta slug={slug!} article={article} />
+
+          {articleCtx === 'anon' && <ArticleMeta.Anon article={article} />}
+
+          {articleCtx === 'auth' && (
+            <ArticleMeta.Auth
+              article={article}
+              $$favoriteModel={$$articlePage.$$favoriteArticle}
+              $$unfavoriteModel={$$articlePage.$$unfavoriteArticle}
+              $$followModel={$$articlePage.$$followProfile}
+              $$unfollowModel={$$articlePage.$$unfollowProfile}
+            />
           )}
 
-          {isUser && <UserArticleMeta article={article} />}
-
-          {isGuest && <GuestArticleMeta article={article} />} */}
+          {articleCtx === 'owner' && <ArticleMeta.Owner article={article} />}
         </div>
       </div>
 
@@ -73,13 +72,19 @@ export function ArticlePage() {
         <hr />
 
         <div className="article-actions">
-          {/* {isCurrentUser && (
-            <CurrentUserArticleMeta slug={slug!} article={article} />
+          {articleCtx === 'anon' && <ArticleMeta.Anon article={article} />}
+
+          {articleCtx === 'auth' && (
+            <ArticleMeta.Auth
+              article={article}
+              $$favoriteModel={$$articlePage.$$favoriteArticle}
+              $$unfavoriteModel={$$articlePage.$$unfavoriteArticle}
+              $$followModel={$$articlePage.$$followProfile}
+              $$unfollowModel={$$articlePage.$$unfollowProfile}
+            />
           )}
 
-          {isUser && <UserArticleMeta article={article} />}
-
-          {isGuest && <GuestArticleMeta article={article} />} */}
+          {articleCtx === 'owner' && <ArticleMeta.Owner article={article} />}
         </div>
 
         <div className="row">

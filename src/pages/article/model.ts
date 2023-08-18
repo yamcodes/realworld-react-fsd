@@ -1,8 +1,13 @@
-import { createEvent, sample } from 'effector';
+import { createQuery } from '@farfetched/core';
+import { createEvent, sample, restore, combine, createStore } from 'effector';
+import { Article, articleApi } from '~entities/article';
+import { $$sessionModel, User } from '~entities/session';
+import { favoriteModel, unfavoriteModel } from '~features/article';
+import { followModel, unfollowModel } from '~features/profile';
 import { createLoaderEffect } from '~shared/lib/router';
-import { articleModel } from '~widgets/article';
 
 const createModel = () => {
+  const update = createEvent();
   const opened = createEvent<string>();
   const unmounted = createEvent();
 
@@ -12,18 +17,110 @@ const createModel = () => {
     return null;
   });
 
-  const $$article = articleModel.createModel();
+  const $slug = restore(opened, null);
+
+  const articleQuery = createQuery({
+    handler: articleApi.getArticleFx,
+    name: 'articleQuery',
+  });
 
   sample({
-    clock: opened,
-    target: $$article.init,
+    clock: [opened, update],
+    source: { slug: $slug, visitor: $$sessionModel.$visitor },
+    filter: ({ slug }) => Boolean(slug),
+    fn: ({ slug, visitor }) => ({
+      slug: slug!,
+      params: { secure: Boolean(visitor) },
+    }),
+    target: articleQuery.start,
+  });
+
+  const $articleCtx = combine(
+    [articleQuery.$data, $$sessionModel.$visitor],
+    ([article, visitor]) => {
+      switch (true) {
+        case isAuth(visitor, article?.author.username || null):
+          return 'auth';
+
+        case isAnon(visitor, article?.author.username || null):
+          return 'anon';
+
+        case isOwner(visitor, article?.author.username || null):
+          return 'owner';
+
+        default:
+          return null;
+      }
+    },
+  );
+
+  const $$followProfile = followModel.createModel();
+  const $$unfollowProfile = unfollowModel.createModel();
+
+  const $$favoriteArticle = favoriteModel.createModel();
+  const $$unfavoriteArticle = unfavoriteModel.createModel();
+
+  const $mutatedArticle = createStore<Article | null>(null)
+    .on(
+      [$$followProfile.mutated, $$unfollowProfile.mutated],
+      (prevArticle, author) =>
+        prevArticle ? { ...prevArticle, author } : null,
+    )
+    .on(
+      [$$favoriteArticle.mutated, $$unfavoriteArticle.mutated],
+      (_, article) => article,
+    );
+
+  sample({
+    clock: [
+      $$followProfile.mutated,
+      $$unfollowProfile.mutated,
+      $$favoriteArticle.mutated,
+      $$unfavoriteArticle.mutated,
+    ],
+    source: $mutatedArticle,
+    target: articleQuery.$data,
+  });
+
+  sample({
+    clock: [
+      $$followProfile.failure,
+      $$unfollowProfile.failure,
+      $$favoriteArticle.failure,
+      $$unfavoriteArticle.failure,
+    ],
+    target: articleQuery.$error,
+  });
+
+  sample({
+    clock: [
+      $$followProfile.settled,
+      $$unfollowProfile.settled,
+      $$favoriteArticle.settled,
+      $$unfavoriteArticle.settled,
+    ],
+    target: update,
   });
 
   return {
     loaderFx,
     unmounted,
-    $$article,
+    articleQuery,
+    $articleCtx,
+    $$followProfile,
+    $$unfollowProfile,
+    $$favoriteArticle,
+    $$unfavoriteArticle,
   };
 };
+
+const isAuth = (visitor: User | null, username: string | null) =>
+  Boolean(visitor && username && visitor.username !== username);
+
+const isOwner = (visitor: User | null, username: string | null) =>
+  Boolean(visitor && username && visitor.username === username);
+
+const isAnon = (visitor: User | null, username: string | null) =>
+  Boolean(!visitor && username);
 
 export const { loaderFx, ...$$articlePage } = createModel();

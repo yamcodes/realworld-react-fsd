@@ -47,27 +47,17 @@ export function createAuthModel(config: AuthConfig) {
   const $$unfollowProfile = unfollowModel.createModel();
 
   sample({
-    clock: [
-      $$followProfile.optimisticallyUpdate,
-      $$unfollowProfile.optimisticallyUpdate,
-    ],
+    clock: [$$followProfile.mutated, $$unfollowProfile.mutated],
     target: $profile,
   });
 
   sample({
-    clock: [
-      $$followProfile.followProfileMutation.finished.failure,
-      $$unfollowProfile.unfollowProfileMutation.finished.failure,
-    ],
-    fn: ({ error }) => ({ error }),
+    clock: [$$followProfile.failure, $$unfollowProfile.failure],
     target: $error,
   });
 
   sample({
-    clock: [
-      $$followProfile.followProfileMutation.finished.finally,
-      $$unfollowProfile.unfollowProfileMutation.finished.finally,
-    ],
+    clock: [$$followProfile.settled, $$unfollowProfile.settled],
     target: init,
   });
 

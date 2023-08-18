@@ -6,7 +6,9 @@ export type UnfollowProfileModel = ReturnType<typeof createModel>;
 
 export function createModel() {
   const unfollow = createEvent<Profile>();
-  const optimisticallyUpdate = createEvent<Profile>();
+  const mutated = createEvent<Profile>();
+  const failure = createEvent<unknown>();
+  const settled = createEvent();
 
   const unfollowProfileMutation = createMutation({
     name: 'unfollowProfileMutation',
@@ -28,12 +30,24 @@ export function createModel() {
     source: $profile,
     filter: Boolean,
     fn: (profile) => ({ ...profile, following: false }),
-    target: optimisticallyUpdate,
+    target: mutated,
+  });
+
+  sample({
+    clock: unfollowProfileMutation.finished.failure,
+    fn: ({ error }) => ({ error }),
+    target: failure,
+  });
+
+  sample({
+    clock: unfollowProfileMutation.finished.finally,
+    target: settled,
   });
 
   return {
-    unfollowProfileMutation,
-    optimisticallyUpdate,
     unfollow,
+    mutated,
+    failure,
+    settled,
   };
 }

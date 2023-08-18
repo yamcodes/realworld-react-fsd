@@ -1,1 +1,1 @@
-export * from './ui';
+export * as ArticleMeta from './ui';
