@@ -19,7 +19,7 @@ export function Owner(props: OwnerProps) {
           <Link
             className="btn btn-outline-secondary btn-sm"
             to={`/editor/${article.slug}`}
-            state={{ article }}
+            state={{ ...article }}
           >
             <IoPencil size={16} />
             &nbsp;Edit Article

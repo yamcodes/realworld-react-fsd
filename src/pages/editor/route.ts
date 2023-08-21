@@ -1,26 +1,39 @@
 import { createElement, lazy } from 'react';
 import { createRoute } from '~shared/lib/router';
 import { Loadable } from '~shared/ui/loadable';
-import { curArticleEditorLoaderFx, newArtilceEditorLoaderFx } from './model';
+import { editArticleLoaderFx } from './model/editArticlePageModel';
+import { newArticleLoaderFx } from './model/newArticlePageModel';
 
-const EditorPage = Loadable(
-  lazy(() => import('./ui').then((module) => ({ default: module.EditorPage }))),
+const NewArticlePage = Loadable(
+  lazy(() =>
+    import('./ui/new-article/ui').then((module) => ({
+      default: module.NewArticlePage,
+    })),
+  ),
 );
 
-const $$newArtilceEditorRoute = createRoute(
+const EditArticlePage = Loadable(
+  lazy(() =>
+    import('./ui/edit-article/ui').then((module) => ({
+      default: module.EditArticlePage,
+    })),
+  ),
+);
+
+const $$newArticleRoute = createRoute(
   {
     path: 'editor',
-    element: createElement(EditorPage),
+    element: createElement(NewArticlePage),
   },
-  { loaderFx: newArtilceEditorLoaderFx },
+  { loaderFx: newArticleLoaderFx },
 );
 
-const $$curArticleEditorRoute = createRoute(
+const $$editArticleRoute = createRoute(
   {
     path: 'editor/:slug',
-    element: createElement(EditorPage),
+    element: createElement(EditArticlePage),
   },
-  { loaderFx: curArticleEditorLoaderFx },
+  { loaderFx: editArticleLoaderFx },
 );
 
-export const $$route = [$$newArtilceEditorRoute, $$curArticleEditorRoute];
+export const $$route = [$$newArticleRoute, $$editArticleRoute];

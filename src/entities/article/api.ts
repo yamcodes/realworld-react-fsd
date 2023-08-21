@@ -2,7 +2,7 @@ import { attach } from 'effector';
 import { RequestParams } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
 import { mapArticle } from './lib';
-import { FeedQuery, NewArticle, Query } from './types';
+import { FeedQuery, NewArticle, Query, UpdateArticle } from './types';
 
 type GetArticlesParams = { query?: Query; params?: RequestParams };
 
@@ -77,6 +77,24 @@ export const createArticleFx = attach({
   source: $ctx,
   effect: async (ctx, { article, params }: CreateArticleParams) => {
     const response = await ctx.restClient.articles.createArticle(
+      { article },
+      params,
+    );
+    return mapArticle(response.data.article);
+  },
+});
+
+type UpdateArticleParams = {
+  slug: string;
+  article: UpdateArticle;
+  params?: RequestParams;
+};
+
+export const updateArticleFx = attach({
+  source: $ctx,
+  effect: async (ctx, { slug, article, params }: UpdateArticleParams) => {
+    const response = await ctx.restClient.articles.updateArticle(
+      slug,
       { article },
       params,
     );

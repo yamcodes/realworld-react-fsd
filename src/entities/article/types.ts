@@ -21,6 +21,13 @@ export type NewArticle = {
   tagList?: string[];
 };
 
+export type UpdateArticle = {
+  title?: string;
+  description?: string;
+  body?: string;
+  tagList?: string[];
+};
+
 export type Query = {
   tag?: string;
   author?: string;
