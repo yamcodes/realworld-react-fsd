@@ -1,1 +1,1 @@
-export { useCreateComment } from './api/createComment';
+export * as createCommentModel from './model';
