@@ -4,14 +4,13 @@ import {
   createStore,
   sample,
   attach,
-  Store,
 } from 'effector';
 import { ZodSchema } from 'zod';
 
 export type FieldModel<Value> = ReturnType<typeof createFieldModel<Value>>;
 
 export type FieldConfig<Value> = {
-  initialValue: Value | Store<Value>;
+  initialValue: Value;
   validationSchema: ZodSchema<Value>;
 };
 
@@ -31,10 +30,7 @@ export function createFieldModel<Value>(config: FieldConfig<Value>) {
   const touched = createEvent();
   const reset = createEvent();
 
-  // FIXME: .on in derived store is deprecated, use .on in store created via createStore instead
-  const $value = (
-    isStore(initialValue) ? initialValue : createStore(initialValue)
-  )
+  const $value = createStore(initialValue)
     .on(changed, (_, value) => value)
     .reset(reset);
 
@@ -67,10 +63,4 @@ export function createFieldModel<Value>(config: FieldConfig<Value>) {
     reset,
     validateFieldFx,
   };
-}
-
-function isStore<Value>(
-  initialValue: Store<Value> | Value,
-): initialValue is Store<Value> {
-  return Boolean((initialValue as Store<Value>).getState);
 }

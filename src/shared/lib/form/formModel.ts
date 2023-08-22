@@ -28,6 +28,7 @@ type FormFields<Values extends AnyFormValues> = {
 type Form<Values extends AnyFormValues> = {
   fields: FormFields<Values>;
   $form: Store<Values>;
+  setForm: Event<Partial<AnyFormValues>>;
   validate: Event<void>;
   validated: {
     success: Event<void>;
@@ -45,6 +46,7 @@ export function createFormModel<Values extends AnyFormValues>(
   const validate = createEvent();
   const success = createEvent();
   const failure = createEvent();
+  const setForm = createEvent<Partial<AnyFormValues>>();
 
   const fieldNames = Object.keys(fields);
 
@@ -60,6 +62,13 @@ export function createFormModel<Values extends AnyFormValues>(
     outputFields[fieldName] = $$field;
     resetForm.push($$field.reset);
     fieldValidateFxs.push(validateFieldFx);
+
+    sample({
+      clock: setForm,
+      filter: (formFields) => Boolean(formFields[fieldName]),
+      fn: (formFields) => formFields[fieldName],
+      target: $$field.changed,
+    });
   });
 
   const $form = combine(
@@ -108,6 +117,7 @@ export function createFormModel<Values extends AnyFormValues>(
     fields: outputFields,
     $form,
     validate,
+    setForm,
     validated: {
       success,
       failure,

@@ -1,5 +1,4 @@
 import { createEvent, restore, sample } from 'effector';
-import { debug } from 'patronum';
 import { string } from 'zod';
 import { Article } from '~entities/article';
 import { updateArticleModel } from '~features/article';
@@ -14,32 +13,29 @@ export const createEditModel = () => {
 
   const $articleToEdit = restore(init, null);
 
-  debug($articleToEdit);
-
   const $$editorForm = createFormModel({
     fields: {
-      title: {
-        initialValue: $articleToEdit.map((s) => s?.title || ''),
-        validationSchema: string().min(3),
-      },
-      description: {
-        initialValue: $articleToEdit.map((s) => s?.description || ''),
-        validationSchema: string().min(3),
-      },
-      body: {
-        initialValue: $articleToEdit.map((s) => s?.body || ''),
-        validationSchema: string().min(3),
-      },
-      tagList: {
-        initialValue: $articleToEdit.map((s) => s?.tagList.join(', ') || ''),
-        validationSchema: string().min(3),
-      },
+      title: { initialValue: '', validationSchema: string().min(3) },
+      description: { initialValue: '', validationSchema: string().min(3) },
+      body: { initialValue: '', validationSchema: string().min(3) },
+      tagList: { initialValue: '', validationSchema: string().min(3) },
     },
   });
 
   sample({
     clock: init,
     target: $$editorForm.reset,
+  });
+
+  sample({
+    clock: init,
+    fn: ({ title, description, body, tagList }) => ({
+      title,
+      description,
+      body,
+      tagList: tagList.join(', '),
+    }),
+    target: $$editorForm.setForm,
   });
 
   sample({
