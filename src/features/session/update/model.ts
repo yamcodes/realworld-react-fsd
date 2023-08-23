@@ -3,7 +3,7 @@ import { createEvent, sample } from 'effector';
 import { $$sessionModel, UpdateUser, sessionApi } from '~entities/session';
 
 export function createModel() {
-  const update = createEvent<UpdateUser>({ name: 'session.update' });
+  const update = createEvent<UpdateUser>();
 
   const updateUserMutation = attachOperation(sessionApi.updateUserMutation);
 

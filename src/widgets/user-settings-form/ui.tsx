@@ -129,7 +129,7 @@ type UserSettingsFormProps = {
 export function UserSettingsForm(props: UserSettingsFormProps) {
   const { $$model } = props;
   const [error, pending] = useUnit([
-    $$model.$$sessionUpdate.$error,
+    $$model.$error,
     $$model.$$sessionUpdate.$pending,
   ]);
   const [submited, unmounted] = useUnit([$$model.submitted, $$model.unmounted]);

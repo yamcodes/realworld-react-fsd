@@ -41,10 +41,10 @@ export async function init() {
     await allSettled(initialize, { scope });
   }
 
-  attachReduxDevTools({
-    name: 'My App',
-    scope,
-  });
+  // attachReduxDevTools({
+  //   name: 'My App',
+  //   scope,
+  // });
 
   return { scope };
 }

@@ -9,6 +9,8 @@
  * ---------------------------------------------------------------
  */
 
+import { getErrorMessage } from './lib';
+
 export interface LoginUserDto {
   email: string;
   /** @format password */
@@ -87,17 +89,6 @@ export interface NewCommentDto {
   body: string;
 }
 
-export interface GenericErrorModelDto {
-  status: string;
-  message: string;
-}
-
-export interface UnexpectedErrorModelDto {
-  errors: {
-    body: string[];
-  };
-}
-
 export type ArticlesQuery = {
   /** Filter by tag */
   tag?: string;
@@ -131,8 +122,6 @@ export type ArticlesFeedQuery = {
    */
   limit?: number;
 };
-
-export type ErrorModelDto = GenericErrorModelDto | UnexpectedErrorModelDto;
 
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, 'body' | 'bodyUsed'>;
@@ -170,10 +159,8 @@ export interface ApiConfig<SecurityDataType = unknown> {
   customFetch?: typeof fetch;
 }
 
-export interface HttpResponse<D extends unknown, E extends unknown = unknown>
-  extends Response {
+export interface HttpResponse<D extends unknown> extends Response {
   data: D;
-  error: E;
 }
 
 type CancelToken = Symbol | string | number;
@@ -309,7 +296,7 @@ export class HttpClient<SecurityDataType = unknown> {
     }
   };
 
-  public request = async <T = any, E = any>({
+  public request = async <T = any>({
     body,
     secure,
     path,
@@ -319,7 +306,7 @@ export class HttpClient<SecurityDataType = unknown> {
     baseUrl,
     cancelToken,
     ...params
-  }: FullRequestParams): Promise<HttpResponse<T, E>> => {
+  }: FullRequestParams): Promise<HttpResponse<T>> => {
     const secureParams =
       ((typeof secure === 'boolean' ? secure : this.baseApiParams.secure) &&
         this.securityWorker &&
@@ -351,9 +338,9 @@ export class HttpClient<SecurityDataType = unknown> {
             : payloadFormatter(body),
       },
     ).then(async (response) => {
-      const r = response as HttpResponse<T, E>;
+      const r = response as HttpResponse<T>;
       r.data = null as unknown as T;
-      r.error = null as unknown as E;
+      let error = null as unknown;
 
       const data = !responseFormat
         ? r
@@ -362,12 +349,12 @@ export class HttpClient<SecurityDataType = unknown> {
               if (r.ok) {
                 r.data = data;
               } else {
-                r.error = data;
+                error = data;
               }
               return r;
             })
             .catch((e) => {
-              r.error = e;
+              error = e;
               return r;
             });
 
@@ -375,7 +362,8 @@ export class HttpClient<SecurityDataType = unknown> {
         this.abortControllers.delete(cancelToken);
       }
 
-      if (!response.ok) throw data;
+      if (!response.ok) throw new Error(getErrorMessage(error));
+
       return data;
     });
   };
@@ -408,12 +396,9 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<
-        {
-          user: UserDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        user: UserDto;
+      }>({
         path: `/users/login`,
         method: 'POST',
         body: data,
@@ -433,12 +418,9 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<
-        {
-          user: UserDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        user: UserDto;
+      }>({
         path: `/users`,
         method: 'POST',
         body: data,
@@ -456,12 +438,9 @@ export class Api<
      * @secure
      */
     getCurrentUser: (params: RequestParams = {}) =>
-      this.request<
-        {
-          user: UserDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        user: UserDto;
+      }>({
         path: `/user`,
         method: 'GET',
         secure: true,
@@ -483,12 +462,9 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<
-        {
-          user: UserDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        user: UserDto;
+      }>({
         path: `/user`,
         method: 'PUT',
         body: data,
@@ -506,12 +482,9 @@ export class Api<
      * @request GET:/profiles/{username}
      */
     getProfileByUsername: (username: string, params: RequestParams = {}) =>
-      this.request<
-        {
-          profile: ProfileDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        profile: ProfileDto;
+      }>({
         path: `/profiles/${username}`,
         method: 'GET',
         ...params,
@@ -527,12 +500,9 @@ export class Api<
      * @secure
      */
     followUserByUsername: (username: string, params: RequestParams = {}) =>
-      this.request<
-        {
-          profile: ProfileDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        profile: ProfileDto;
+      }>({
         path: `/profiles/${username}/follow`,
         method: 'POST',
         secure: true,
@@ -549,12 +519,9 @@ export class Api<
      * @secure
      */
     unfollowUserByUsername: (username: string, params: RequestParams = {}) =>
-      this.request<
-        {
-          profile: ProfileDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        profile: ProfileDto;
+      }>({
         path: `/profiles/${username}/follow`,
         method: 'DELETE',
         secure: true,
@@ -572,13 +539,10 @@ export class Api<
      * @secure
      */
     getArticlesFeed: (query?: ArticlesFeedQuery, params: RequestParams = {}) =>
-      this.request<
-        {
-          articles: ArticleDto[];
-          articlesCount: number;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        articles: ArticleDto[];
+        articlesCount: number;
+      }>({
         path: `/articles/feed`,
         method: 'GET',
         query: query,
@@ -595,13 +559,10 @@ export class Api<
      * @request GET:/articles
      */
     getArticles: (query?: ArticlesQuery, params: RequestParams = {}) =>
-      this.request<
-        {
-          articles: ArticleDto[];
-          articlesCount: number;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        articles: ArticleDto[];
+        articlesCount: number;
+      }>({
         path: `/articles`,
         method: 'GET',
         query: query,
@@ -623,12 +584,9 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<
-        {
-          article: ArticleDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        article: ArticleDto;
+      }>({
         path: `/articles`,
         method: 'POST',
         body: data,
@@ -645,12 +603,9 @@ export class Api<
      * @request GET:/articles/{slug}
      */
     getArticle: (slug: string, params: RequestParams = {}) =>
-      this.request<
-        {
-          article: ArticleDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        article: ArticleDto;
+      }>({
         path: `/articles/${slug}`,
         method: 'GET',
         ...params,
@@ -672,12 +627,9 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<
-        {
-          article: ArticleDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        article: ArticleDto;
+      }>({
         path: `/articles/${slug}`,
         method: 'PUT',
         body: data,
@@ -695,7 +647,7 @@ export class Api<
      * @secure
      */
     deleteArticle: (slug: string, params: RequestParams = {}) =>
-      this.request<any, ErrorModelDto>({
+      this.request<any>({
         path: `/articles/${slug}`,
         method: 'DELETE',
         secure: true,
@@ -711,12 +663,9 @@ export class Api<
      * @request GET:/articles/{slug}/comments
      */
     getArticleComments: (slug: string, params: RequestParams = {}) =>
-      this.request<
-        {
-          comments: CommentDto[];
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        comments: CommentDto[];
+      }>({
         path: `/articles/${slug}/comments`,
         method: 'GET',
         ...params,
@@ -738,12 +687,9 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<
-        {
-          comment: CommentDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        comment: CommentDto;
+      }>({
         path: `/articles/${slug}/comments`,
         method: 'POST',
         body: data,
@@ -765,7 +711,7 @@ export class Api<
       id: number,
       params: RequestParams = {},
     ) =>
-      this.request<any, ErrorModelDto>({
+      this.request<any>({
         path: `/articles/${slug}/comments/${id}`,
         method: 'DELETE',
         secure: true,
@@ -782,12 +728,9 @@ export class Api<
      * @secure
      */
     createArticleFavorite: (slug: string, params: RequestParams = {}) =>
-      this.request<
-        {
-          article: ArticleDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        article: ArticleDto;
+      }>({
         path: `/articles/${slug}/favorite`,
         method: 'POST',
         secure: true,
@@ -804,12 +747,9 @@ export class Api<
      * @secure
      */
     deleteArticleFavorite: (slug: string, params: RequestParams = {}) =>
-      this.request<
-        {
-          article: ArticleDto;
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        article: ArticleDto;
+      }>({
         path: `/articles/${slug}/favorite`,
         method: 'DELETE',
         secure: true,
@@ -826,12 +766,9 @@ export class Api<
      * @request GET:/tags
      */
     getTags: (params: RequestParams = {}) =>
-      this.request<
-        {
-          tags: string[];
-        },
-        ErrorModelDto
-      >({
+      this.request<{
+        tags: string[];
+      }>({
         path: `/tags`,
         method: 'GET',
         ...params,

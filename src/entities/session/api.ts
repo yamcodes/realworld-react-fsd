@@ -39,8 +39,8 @@ export type CurrentUserQueryParams = {
 export const currentUserQuery = createQuery({
   effect: attach({
     source: $ctx,
-    effect: async (ctx, params?: RequestParams) => {
-      const response = await ctx.restClient.user.getCurrentUser(params);
+    effect: async (ctx, params?: CurrentUserQueryParams) => {
+      const response = await ctx.restClient.user.getCurrentUser(params?.params);
       return response.data.user as unknown;
     },
   }),

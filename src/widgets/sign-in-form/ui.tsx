@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 import { FormFieldModel } from '~shared/lib/form';
 import { PATH_PAGE } from '~shared/lib/router';
-// import { ErrorHandler } from '~shared/ui/error-handler';
+import { ErrorHandler } from '~shared/ui/error-handler';
 import { SigninFormModel } from './model';
 
 type FieldType = {
@@ -63,6 +63,8 @@ export function SigninForm(props: SigninFormProps) {
   const { $$model } = props;
 
   const pending = useUnit($$model.$$sessionSignIn.$pending);
+  const error = useUnit($$model.$error);
+
   const [submited, unmounted] = useUnit([$$model.submitted, $$model.unmounted]);
 
   const onFormSubmit: FormEventHandler = (e) => {
@@ -79,7 +81,7 @@ export function SigninForm(props: SigninFormProps) {
         <Link to={PATH_PAGE.register}>Need an account?</Link>
       </p>
 
-      {/* {error && <ErrorHandler error={error as any} />} */}
+      {error && <ErrorHandler error={error} />}
 
       <form onSubmit={onFormSubmit}>
         <fieldset disabled={pending}>

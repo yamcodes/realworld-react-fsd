@@ -1,4 +1,4 @@
-import { createEvent, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { string } from 'zod';
 import { sessionUpdateModel } from '~features/session';
 import { createFormModel } from '~shared/lib/form';
@@ -56,20 +56,20 @@ export function createModel() {
     target: $$sessionUpdate.update,
   });
 
+  const $error = createStore<unknown>(null)
+    .on($$sessionUpdate.failure, (_, { error }) => error)
+    .reset(init);
+
   // sample({
   //   clock: $$sessionModel.update,
   //   target: toHomeFx,
-  // });
-
-  // sample({
-  //   clock: unmounted,
-  //   target: $$sessionUpdate.abort,
   // });
 
   return {
     init,
     submitted,
     unmounted,
+    $error,
     fields: $$userSettingsForm.fields,
     $$sessionUpdate,
   };

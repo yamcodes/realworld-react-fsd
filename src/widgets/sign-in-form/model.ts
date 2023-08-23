@@ -1,8 +1,10 @@
-import { createEvent, sample } from 'effector';
+import { isInvalidDataError } from '@farfetched/core';
+import { createEvent, createStore, sample } from 'effector';
 import { string } from 'zod';
+import { $$sessionModel } from '~entities/session';
 import { sessionSigninModel } from '~features/session';
-// import { $ctx } from '~shared/ctx';
 import { createFormModel } from '~shared/lib/form';
+import { toHomeFx } from '~shared/lib/router';
 
 export type SigninFormModel = Omit<ReturnType<typeof createModel>, 'init'>;
 
@@ -10,11 +12,6 @@ export function createModel() {
   const init = createEvent();
   const submitted = createEvent();
   const unmounted = createEvent();
-
-  // const toHomeFx = attach({
-  //   source: $ctx,
-  //   effect: (ctx) => ctx.router.navigate('/'),
-  // });
 
   const $$signinForm = createFormModel({
     fields: {
@@ -47,10 +44,17 @@ export function createModel() {
     target: $$sessionSignIn.signin,
   });
 
-  // sample({
-  //   clock: $$sessionModel.update,
-  //   target: toHomeFx,
-  // });
+  const $error = createStore<string | null>(null)
+    .on($$sessionSignIn.failure, (_, data) => {
+      if (isInvalidDataError(data)) return data.error.explanation;
+      return (data.error as Error).message;
+    })
+    .reset(init);
+
+  sample({
+    clock: $$sessionModel.update,
+    target: toHomeFx,
+  });
 
   // sample({
   //   clock: unmounted,
@@ -61,6 +65,7 @@ export function createModel() {
     init,
     submitted,
     unmounted,
+    $error,
     fields: $$signinForm.fields,
     $$sessionSignIn,
   };

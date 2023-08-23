@@ -1,1 +1,1 @@
-export { ErrorHandler } from './ErrorHandler';
+export { ErrorHandler } from './ui';

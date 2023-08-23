@@ -1,4 +1,4 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, sample } from 'effector';
 import { tagApi } from '~entities/tag';
 
@@ -9,10 +9,7 @@ export function createModel() {
   const unmounted = createEvent();
   const tagClicked = createEvent<string>();
 
-  const popularTagsQuery = createQuery({
-    handler: tagApi.getTagsFx,
-    name: 'popularTagsQuery',
-  });
+  const popularTagsQuery = attachOperation(tagApi.tagsQuery);
 
   sample({
     clock: init,
