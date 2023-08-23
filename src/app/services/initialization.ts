@@ -1,13 +1,9 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { attachReduxDevTools } from '@effector/redux-devtools-adapter';
 import { allSettled, fork, combine, sample } from 'effector';
 import { $$sessionModel } from '~entities/session';
 import { $ctx } from '~shared/ctx';
-import {
-  createRestClient,
-  createRouting,
-  createTokenStorage,
-} from './services';
+import { createRestClient } from './restClient';
+import { createRouting } from './router';
+import { createTokenStorage } from './tokenStorage';
 
 export async function init() {
   const $$tokenStorage = createTokenStorage({
@@ -37,11 +33,6 @@ export async function init() {
   });
 
   const scope = fork();
-
-  // attachReduxDevTools({
-  //   name: 'Effector DevTools',
-  //   scope,
-  // });
 
   // eslint-disable-next-line no-restricted-syntax
   for await (const initialize of initializers) {

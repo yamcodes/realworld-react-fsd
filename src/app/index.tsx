@@ -1,9 +1,12 @@
 import { Provider as ScopeProvider } from 'effector-react';
 import ReactDOM from 'react-dom/client';
+import { ErrorBoundary } from 'react-error-boundary';
+import { FullPageError } from '~shared/ui/full-page-error';
 import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
 import { Spinner } from '~shared/ui/spinner';
-import { init } from './initialization';
-import { Provider } from './providers';
+import { Router } from './providers';
+import { init } from './services';
+import '~shared/main.css';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -19,6 +22,8 @@ const { scope } = await init();
 
 root.render(
   <ScopeProvider value={scope}>
-    <Provider />
+    <ErrorBoundary FallbackComponent={FullPageError}>
+      <Router />
+    </ErrorBoundary>
   </ScopeProvider>,
 );
