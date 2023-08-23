@@ -1,41 +1,30 @@
-import {
-  attach,
-  createEvent,
-  createEffect,
-  createStore,
-  sample,
-} from 'effector';
+import { attachOperation } from '@farfetched/core';
+import { attach, createEvent, createStore, sample } from 'effector';
 import { $ctx } from '~shared/ctx';
-import { currentUserFx } from './api';
+import { currentUserQuery } from './api';
 import { User } from './types';
 
-const name = 'session';
-
 function createSessionModel() {
-  const init = createEvent({ name: name.concat('.init') });
-  const update = createEvent<User>({ name: name.concat('.update') });
-  const clear = createEvent({ name: name.concat('.clear') });
+  const init = createEvent();
+  const update = createEvent<User>();
+  const clear = createEvent();
 
-  const requestCurrentUserFx = createEffect({
-    name: name.concat('.requestCurrentUserFx'),
-    handler: currentUserFx,
-  });
+  const attachedCurrentUserQuery = attachOperation(currentUserQuery);
 
-  const initFx = attach({
-    name: name.concat('.initFx'),
+  const getUserTokenFx = attach({
     source: $ctx,
-    effect: (ctx) => {
+    effect: async (ctx) => {
       const token = ctx.tokenStorage.getToken();
       if (token) {
         ctx.restClient.setSecurityData(token);
-        return requestCurrentUserFx();
+        return Promise.resolve(token);
       }
-      return null;
+
+      return Promise.reject(new Error('token not found'));
     },
   });
 
   const updateFx = attach({
-    name: name.concat('.updateFx'),
     source: $ctx,
     effect: (ctx, token: string) => {
       ctx.tokenStorage.updateToken(token);
@@ -44,7 +33,6 @@ function createSessionModel() {
   });
 
   const clearFx = attach({
-    name: name.concat('.clearFx'),
     source: $ctx,
     effect: (ctx) => {
       ctx.tokenStorage.clearToken();
@@ -52,16 +40,24 @@ function createSessionModel() {
     },
   });
 
-  const $visitor = createStore<User | null>(null, {
-    name: name.concat('.$visitor'),
-  })
-    .on(initFx.doneData, (_, user) => user)
+  const $visitor = createStore<User | null>(null)
+    .on(
+      attachedCurrentUserQuery.finished.success,
+      (_, { result: user }) => user,
+    )
+    .on(attachedCurrentUserQuery.finished.failure, () => null)
     .on(update, (_, user) => user)
     .reset(clear);
 
   sample({
     clock: init,
-    target: initFx,
+    target: getUserTokenFx,
+  });
+
+  sample({
+    clock: getUserTokenFx.done,
+    fn: () => {},
+    target: attachedCurrentUserQuery.start,
   });
 
   sample({

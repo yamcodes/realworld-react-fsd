@@ -1,6 +1,5 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, sample, Store } from 'effector';
-import { debug } from 'patronum';
 import { Article } from '~entities/article';
 import { commentApi } from '~entities/comment';
 import { $$sessionModel } from '~entities/session';
@@ -19,13 +18,7 @@ export const createModel = (config: CommentsListConfig) => {
   const reset = createEvent();
   const unmounted = createEvent();
 
-  const commentsQuery = createQuery({
-    handler: commentApi.getCommentsFx,
-    initialData: [],
-    name: 'commentsQuery',
-  });
-
-  debug($article);
+  const commentsQuery = attachOperation(commentApi.commentsQuery);
 
   sample({
     clock: init,

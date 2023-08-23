@@ -1,4 +1,4 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { Store, createEvent, sample } from 'effector';
 import { profileApi } from '~entities/profile';
 import { followModel, unfollowModel } from '~features/profile';
@@ -16,10 +16,7 @@ export function createAuthModel(config: AuthConfig) {
   const unmounted = createEvent();
   const reset = createEvent();
 
-  const profileQuery = createQuery({
-    handler: profileApi.getProfileFx,
-    name: 'profileQuery',
-  });
+  const profileQuery = attachOperation(profileApi.profileQuery);
 
   sample({
     clock: init,

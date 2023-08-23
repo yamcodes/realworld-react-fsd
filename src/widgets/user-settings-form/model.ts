@@ -42,7 +42,7 @@ export function createModel() {
 
   sample({
     clock: init,
-    target: [$$sessionUpdate.reset, $$userSettingsForm.reset],
+    target: $$userSettingsForm.reset,
   });
 
   sample({

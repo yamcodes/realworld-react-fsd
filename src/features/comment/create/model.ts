@@ -1,4 +1,4 @@
-import { createMutation } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, restore, sample } from 'effector';
 import { Comment, commentApi } from '~entities/comment';
 import { $$sessionModel } from '~entities/session';
@@ -6,15 +6,14 @@ import { $$sessionModel } from '~entities/session';
 export type CreateCommentModel = ReturnType<typeof createModel>;
 
 export function createModel() {
-  const create = createEvent<commentApi.CreateCommentParams | null>();
+  const create = createEvent<commentApi.CreateCommentMutationParams | null>();
   const mutated = createEvent<Comment>();
   const failure = createEvent<unknown>();
   const settled = createEvent();
 
-  const createCommentMutation = createMutation({
-    handler: commentApi.createCommentFx,
-    name: 'createCommentMutation',
-  });
+  const createCommentMutation = attachOperation(
+    commentApi.createCommentMutation,
+  );
 
   const $params = restore(create, null);
 

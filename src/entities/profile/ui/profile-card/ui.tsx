@@ -1,12 +1,10 @@
 import { ReactNode } from 'react';
 import { Profile } from '../../types';
 
-type NewType = {
+type ProfileCardProps = {
   profile: Profile;
   actions?: ReactNode;
 };
-
-type ProfileCardProps = NewType;
 
 export function ProfileCard(props: ProfileCardProps) {
   const { profile, actions } = props;

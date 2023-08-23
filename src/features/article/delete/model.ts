@@ -1,4 +1,4 @@
-import { createMutation } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, sample } from 'effector';
 import { articleApi } from '~entities/article';
 
@@ -10,10 +10,9 @@ export function createModel() {
   const failure = createEvent<unknown>();
   const settled = createEvent();
 
-  const deleteArticleMutation = createMutation({
-    handler: articleApi.deleteArticleFx,
-    name: 'deleteArticleMutation',
-  });
+  const deleteArticleMutation = attachOperation(
+    articleApi.deleteArticleMutation,
+  );
 
   sample({
     clock: remove,

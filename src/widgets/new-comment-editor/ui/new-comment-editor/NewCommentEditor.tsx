@@ -8,7 +8,7 @@ import { profileApi } from '~entities/profile';
 // import { sessionModel } from '~entities/session';
 import { useCreateComment } from '~features/comment';
 import { NewCommentDto } from '~shared/api/realworld';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { PATH_PAGE } from '~shared/lib/router';
 
 const initialValues: NewCommentDto = { body: '' };
 

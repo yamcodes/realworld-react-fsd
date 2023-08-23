@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { PATH_PAGE } from '~shared/lib/router';
 import { Article } from '../../types';
 
 type ArticleProps = {
   article: Article;
-  actions: ReactNode;
+  actions?: ReactNode;
 };
 
 export function ArticlePreview(props: ArticleProps) {
@@ -20,7 +20,7 @@ export function ArticlePreview(props: ArticleProps) {
   } = article;
 
   return (
-    <div key={slug} className="article-preview">
+    <div className="article-preview">
       <div className="article-meta">
         <Link to={PATH_PAGE.profile.root(username)}>
           <img src={image} alt={username} />

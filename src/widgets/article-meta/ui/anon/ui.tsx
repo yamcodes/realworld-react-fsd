@@ -12,7 +12,7 @@ export function Anon(props: AnonProps) {
   return (
     <ArticleMeta
       article={article}
-      actionSlot={
+      actions={
         <>
           <Link
             to="/login"

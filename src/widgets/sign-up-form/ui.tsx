@@ -2,7 +2,7 @@ import { ChangeEvent, FormEventHandler, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 import { FormFieldModel } from '~shared/lib/form';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { PATH_PAGE } from '~shared/lib/router';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { SignupFormModel } from './model';
 

@@ -1,4 +1,4 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, createStore, sample } from 'effector';
 import { equals, and, not } from 'patronum';
 import { Article, articleApi, articleModel } from '~entities/article';
@@ -14,10 +14,7 @@ export function createModel() {
 
   const fetchInitial = createEvent();
 
-  const articlesFeedQuery = createQuery({
-    handler: articleApi.getArticlesFeedFx,
-    name: 'articlesFeedQuery',
-  });
+  const articlesFeedQuery = attachOperation(articleApi.articlesFeedQuery);
 
   const $$pagination = articleModel.createPaginationModel();
 

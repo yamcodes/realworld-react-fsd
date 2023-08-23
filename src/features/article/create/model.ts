@@ -1,4 +1,4 @@
-import { createMutation } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, restore, sample } from 'effector';
 import { Article, NewArticle, articleApi } from '~entities/article';
 import { $$sessionModel } from '~entities/session';
@@ -11,10 +11,9 @@ export function createModel() {
   const failure = createEvent<unknown>();
   const settled = createEvent();
 
-  const createArticleMutation = createMutation({
-    handler: articleApi.createArticleFx,
-    name: 'createArticleMutation',
-  });
+  const createArticleMutation = attachOperation(
+    articleApi.createArticleMutation,
+  );
 
   const $newArticle = restore(create, null);
 

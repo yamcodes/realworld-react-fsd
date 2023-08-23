@@ -14,7 +14,7 @@ export function Owner(props: OwnerProps) {
   return (
     <ArticleMeta
       article={article}
-      actionSlot={
+      actions={
         <>
           <Link
             className="btn btn-outline-secondary btn-sm"

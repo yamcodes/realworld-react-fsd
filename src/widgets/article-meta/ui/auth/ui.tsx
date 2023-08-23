@@ -32,7 +32,7 @@ export function Auth(props: AuthProps) {
   return (
     <ArticleMeta
       article={article}
-      actionSlot={
+      actions={
         <>
           {article.author.following ? (
             <UnfollowProfile

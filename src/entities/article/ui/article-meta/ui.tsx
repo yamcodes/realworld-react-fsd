@@ -1,16 +1,16 @@
 import { ReactNode } from 'react';
 import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
-import { Article } from '~entities/article';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { PATH_PAGE } from '~shared/lib/router';
+import { Article } from '../../types';
 
 type ArticleMetaProps = {
   article: Article;
-  actionSlot?: ReactNode;
+  actions?: ReactNode;
 };
 
 export function ArticleMeta(props: ArticleMetaProps) {
-  const { article, actionSlot } = props;
+  const { article, actions } = props;
   const { createdAt, author } = article;
   const { username, image } = author;
 
@@ -27,7 +27,7 @@ export function ArticleMeta(props: ArticleMetaProps) {
         </Link>
         <span className="date">{formatedDate}</span>
       </div>
-      {actionSlot}
+      {actions}
     </div>
   );
 }

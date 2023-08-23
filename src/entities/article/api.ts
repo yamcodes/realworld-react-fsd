@@ -1,113 +1,166 @@
+import { createMutation, createQuery } from '@farfetched/core';
 import { attach } from 'effector';
-import { RequestParams } from '~shared/api/realworld';
+import {
+  ArticlesFeedQuery,
+  ArticlesQuery,
+  RequestParams,
+} from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
-import { mapArticle } from './lib';
-import { FeedQuery, NewArticle, Query, UpdateArticle } from './types';
+import {
+  NewArticle,
+  UpdateArticle,
+  articlesContract,
+  articleContract,
+} from './types';
 
-type GetArticlesParams = { query?: Query; params?: RequestParams };
+export type ArticlesQueryParams = {
+  query?: ArticlesQuery;
+  params?: RequestParams;
+};
 
-export const getArticlesFx = attach({
-  source: $ctx,
-  effect: async (ctx, { query, params }: GetArticlesParams) => {
-    const response = await ctx.restClient.articles.getArticles(query, params);
-    const articles = response.data.articles.map(mapArticle);
-    return {
-      articles,
-      articlesCount: response.data.articlesCount,
-    };
-  },
+export const articlesQuery = createQuery({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { query, params }: ArticlesQueryParams) => {
+      const response = await ctx.restClient.articles.getArticles(query, params);
+      return response.data as unknown;
+    },
+  }),
+  contract: articlesContract,
+  name: 'articlesQuery',
 });
 
-type GetArticlesFeedParams = { query?: FeedQuery; params?: RequestParams };
+export type ArticlesFeedQueryParams = {
+  query?: ArticlesFeedQuery;
+  params?: RequestParams;
+};
 
-export const getArticlesFeedFx = attach({
-  source: $ctx,
-  effect: async (ctx, { query, params }: GetArticlesFeedParams) => {
-    const response = await ctx.restClient.articles.getArticlesFeed(
-      query,
-      params,
-    );
-    const articles = response.data.articles.map(mapArticle);
-    return {
-      articles,
-      articlesCount: response.data.articlesCount,
-    };
-  },
+export const articlesFeedQuery = createQuery({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { query, params }: ArticlesFeedQueryParams) => {
+      const response = await ctx.restClient.articles.getArticlesFeed(
+        query,
+        params,
+      );
+      return response.data as unknown;
+    },
+  }),
+  contract: articlesContract,
+  name: 'articlesFeedQuery',
 });
 
-type CreateArticleFavorite = { slug: string; params?: RequestParams };
+export type FavoriteArticleMutationParams = {
+  slug: string;
+  params?: RequestParams;
+};
 
-export const createArticleFavoriteFx = attach({
-  source: $ctx,
-  effect: async (ctx, { slug, params }: CreateArticleFavorite) => {
-    const response = await ctx.restClient.articles.createArticleFavorite(
-      slug,
-      params,
-    );
-    return mapArticle(response.data.article);
-  },
+export const favoriteArticleMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { slug, params }: FavoriteArticleMutationParams) => {
+      const response = await ctx.restClient.articles.createArticleFavorite(
+        slug,
+        params,
+      );
+      return response.data.article as unknown;
+    },
+  }),
+  contract: articleContract,
+  name: 'favoriteArticleMutation',
 });
 
-type DeleteArticleFavorite = { slug: string; params?: RequestParams };
+export type UnfavoriteArticleMutationParams = {
+  slug: string;
+  params?: RequestParams;
+};
 
-export const deleteArticleFavoriteFx = attach({
-  source: $ctx,
-  effect: async (ctx, { slug, params }: DeleteArticleFavorite) => {
-    const response = await ctx.restClient.articles.deleteArticleFavorite(
-      slug,
-      params,
-    );
-    return mapArticle(response.data.article);
-  },
+export const unfavoriteArticleMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { slug, params }: UnfavoriteArticleMutationParams) => {
+      const response = await ctx.restClient.articles.deleteArticleFavorite(
+        slug,
+        params,
+      );
+      return response.data.article as unknown;
+    },
+  }),
+  contract: articleContract,
+  name: 'unfavoriteArticleMutation',
 });
 
-type GetArticleParams = { slug: string; params?: RequestParams };
+export type ArticleQueryParams = { slug: string; params?: RequestParams };
 
-export const getArticleFx = attach({
-  source: $ctx,
-  effect: async (ctx, { slug, params }: GetArticleParams) => {
-    const response = await ctx.restClient.articles.getArticle(slug, params);
-    return mapArticle(response.data.article);
-  },
+export const articleQuery = createQuery({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { slug, params }: ArticleQueryParams) => {
+      const response = await ctx.restClient.articles.getArticle(slug, params);
+      return response.data.article as unknown;
+    },
+  }),
+  contract: articleContract,
+  name: 'articleQuery',
 });
 
-type CreateArticleParams = { article: NewArticle; params?: RequestParams };
+export type CreateArticleMutationParams = {
+  article: NewArticle;
+  params?: RequestParams;
+};
 
-export const createArticleFx = attach({
-  source: $ctx,
-  effect: async (ctx, { article, params }: CreateArticleParams) => {
-    const response = await ctx.restClient.articles.createArticle(
-      { article },
-      params,
-    );
-    return mapArticle(response.data.article);
-  },
+export const createArticleMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { article, params }: CreateArticleMutationParams) => {
+      const response = await ctx.restClient.articles.createArticle(
+        { article },
+        params,
+      );
+      return response.data.article as unknown;
+    },
+  }),
+  contract: articleContract,
+  name: 'createArticleMutation',
 });
 
-type UpdateArticleParams = {
+export type UpdateArticleMutationParams = {
   slug: string;
   article: UpdateArticle;
   params?: RequestParams;
 };
 
-export const updateArticleFx = attach({
-  source: $ctx,
-  effect: async (ctx, { slug, article, params }: UpdateArticleParams) => {
-    const response = await ctx.restClient.articles.updateArticle(
-      slug,
-      { article },
-      params,
-    );
-    return mapArticle(response.data.article);
-  },
+export const updateArticleMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (
+      ctx,
+      { slug, article, params }: UpdateArticleMutationParams,
+    ) => {
+      const response = await ctx.restClient.articles.updateArticle(
+        slug,
+        { article },
+        params,
+      );
+      return response.data.article as unknown;
+    },
+  }),
+  contract: articleContract,
+  name: 'updateArticleMutation',
 });
 
-type DeleteArticleParams = { slug: string; params?: RequestParams };
+export type DeleteArticleMutationParams = {
+  slug: string;
+  params?: RequestParams;
+};
 
-export const deleteArticleFx = attach({
-  source: $ctx,
-  effect: async (ctx, { slug, params }: DeleteArticleParams) => {
-    await ctx.restClient.articles.deleteArticle(slug, params);
-    return {};
-  },
+export const deleteArticleMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { slug, params }: DeleteArticleMutationParams) => {
+      await ctx.restClient.articles.deleteArticle(slug, params);
+      return {} as unknown;
+    },
+  }),
+  name: 'deleteArticleMutation',
 });

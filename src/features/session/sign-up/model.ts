@@ -1,32 +1,27 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, sample } from 'effector';
-import { $$sessionModel, sessionApi } from '~entities/session';
-import { NewUserDto } from '~shared/api/realworld';
+import { $$sessionModel, NewUser, sessionApi } from '~entities/session';
 
 export function createModel() {
-  const signup = createEvent<NewUserDto>({ name: 'session.signup' });
+  const signup = createEvent<NewUser>({ name: 'session.signup' });
 
-  const $$signupQuery = createQuery({
-    handler: sessionApi.createUserFx,
-    name: 'session.signupQuery',
-  });
+  const signupMutation = attachOperation(sessionApi.signupMutation);
 
   sample({
     clock: signup,
     fn: (user) => ({ user }),
-    target: $$signupQuery.start,
+    target: signupMutation.start,
   });
 
   sample({
-    clock: $$signupQuery.finished.success,
+    clock: signupMutation.finished.success,
     fn: (data) => data.result,
     target: $$sessionModel.update,
   });
 
   return {
     signup,
-    reset: $$signupQuery.reset,
-    $pending: $$signupQuery.$pending,
-    $error: $$signupQuery.$error,
+    failure: signupMutation.finished.failure,
+    $pending: signupMutation.$pending,
   };
 }

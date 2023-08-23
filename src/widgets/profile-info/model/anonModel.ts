@@ -1,4 +1,4 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { Store, createEvent, sample } from 'effector';
 import { profileApi } from '~entities/profile';
 
@@ -15,10 +15,7 @@ export function createAnonModel(config: AnonConfig) {
   const unmounted = createEvent();
   const reset = createEvent();
 
-  const profileQuery = createQuery({
-    handler: profileApi.getProfileFx,
-    name: 'profileQuery',
-  });
+  const profileQuery = attachOperation(profileApi.profileQuery);
 
   sample({
     clock: init,

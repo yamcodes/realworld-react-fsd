@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { PATH_PAGE } from '~shared/lib/router';
 import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
 import styles from './page404.module.css';
 

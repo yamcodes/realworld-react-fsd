@@ -1,4 +1,4 @@
-import { createMutation } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, restore, sample } from 'effector';
 import { Profile, profileApi } from '~entities/profile';
 
@@ -10,10 +10,9 @@ export function createModel() {
   const failure = createEvent<unknown>();
   const settled = createEvent();
 
-  const unfollowProfileMutation = createMutation({
-    name: 'unfollowProfileMutation',
-    handler: profileApi.unfollowProfileFx,
-  });
+  const unfollowProfileMutation = attachOperation(
+    profileApi.unfollowProfileMutation,
+  );
 
   const $profile = restore(unfollow, null);
 

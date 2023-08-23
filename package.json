@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@farfetched/core": "^0.8.14",
+    "@farfetched/zod": "^0.8.14",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.7",
     "effector": "^22.8.6",

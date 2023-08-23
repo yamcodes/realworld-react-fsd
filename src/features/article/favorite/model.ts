@@ -1,4 +1,4 @@
-import { createMutation } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, restore, sample } from 'effector';
 import { Article, articleApi } from '~entities/article';
 
@@ -10,10 +10,9 @@ export function createModel() {
   const failure = createEvent<unknown>();
   const settled = createEvent();
 
-  const favoriteArticleMutation = createMutation({
-    handler: articleApi.createArticleFavoriteFx,
-    name: 'favoriteArticleMutation',
-  });
+  const favoriteArticleMutation = attachOperation(
+    articleApi.favoriteArticleMutation,
+  );
 
   const $article = restore(favorite, null);
   const $slug = $article.map((article) => article?.slug);

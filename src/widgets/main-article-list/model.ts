@@ -1,4 +1,4 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, createStore, sample, combine } from 'effector';
 import { equals, and, not } from 'patronum';
 import { Article, articleApi, articleModel } from '~entities/article';
@@ -21,10 +21,7 @@ export function createModel(config: MainArticleListConfgi) {
 
   const fetchInitial = createEvent();
 
-  const articlesQuery = createQuery({
-    handler: articleApi.getArticlesFx,
-    name: 'articlesQuery',
-  });
+  const articlesQuery = attachOperation(articleApi.articlesQuery);
 
   const $$pagination = articleModel.createPaginationModel();
 

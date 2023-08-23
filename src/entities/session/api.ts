@@ -1,54 +1,69 @@
+import { createMutation, createQuery } from '@farfetched/core';
 import { attach } from 'effector';
-import {
-  LoginUserDto,
-  NewUserDto,
-  RequestParams,
-  UpdateUserDto,
-} from '~shared/api/realworld';
+import { RequestParams } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
-import { mapUser } from './lib';
+import { LoginUser, NewUser, UpdateUser, userContract } from './types';
 
-type CreateUserParams = { user: NewUserDto; params?: RequestParams };
+export type SignupMutationParams = { user: NewUser; params?: RequestParams };
 
-export const createUserFx = attach({
-  name: 'createUserFx',
-  source: $ctx,
-  effect: async (ctx, { user, params }: CreateUserParams) => {
-    const response = await ctx.restClient.users.createUser({ user }, params);
-    return mapUser(response.data.user);
-  },
+export const signupMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { user, params }: SignupMutationParams) => {
+      const response = await ctx.restClient.users.createUser({ user }, params);
+      return response.data.user as unknown;
+    },
+  }),
+  contract: userContract,
+  name: 'signupMutation',
 });
 
-type LoginUserParams = { user: LoginUserDto; params?: RequestParams };
+export type SigninMutationParams = { user: LoginUser; params?: RequestParams };
 
-export const loginUserFx = attach({
-  name: 'loginUserFx',
-  source: $ctx,
-  effect: async (ctx, { user, params }: LoginUserParams) => {
-    const response = await ctx.restClient.users.login({ user }, params);
-    return mapUser(response.data.user);
-  },
+export const signinMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { user, params }: SigninMutationParams) => {
+      const response = await ctx.restClient.users.login({ user }, params);
+      return response.data.user as unknown;
+    },
+  }),
+  contract: userContract,
+  name: 'signinMutation',
 });
 
-export const currentUserFx = attach({
-  name: 'currentUserFx',
-  source: $ctx,
-  effect: async (ctx, params?: RequestParams) => {
-    const response = await ctx.restClient.user.getCurrentUser(params);
-    return mapUser(response.data.user);
-  },
+export type CurrentUserQueryParams = {
+  params?: RequestParams;
+};
+
+export const currentUserQuery = createQuery({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, params?: RequestParams) => {
+      const response = await ctx.restClient.user.getCurrentUser(params);
+      return response.data.user as unknown;
+    },
+  }),
+  contract: userContract,
+  name: 'currentUserQuery',
 });
 
-type UpdateUserParams = { user: UpdateUserDto; params?: RequestParams };
+export type UpdateUserMutationParams = {
+  user: UpdateUser;
+  params?: RequestParams;
+};
 
-export const updateUserFx = attach({
-  name: 'updateUserFx',
-  source: $ctx,
-  effect: async (ctx, { user, params }: UpdateUserParams) => {
-    const response = await ctx.restClient.user.updateCurrentUser(
-      { user },
-      params,
-    );
-    return mapUser(response.data.user);
-  },
+export const updateUserMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { user, params }: UpdateUserMutationParams) => {
+      const response = await ctx.restClient.user.updateCurrentUser(
+        { user },
+        params,
+      );
+      return response.data.user as unknown;
+    },
+  }),
+  contract: userContract,
+  name: 'updateUserMutation',
 });

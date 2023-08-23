@@ -98,6 +98,40 @@ export interface UnexpectedErrorModelDto {
   };
 }
 
+export type ArticlesQuery = {
+  /** Filter by tag */
+  tag?: string;
+  /** Filter by author (username) */
+  author?: string;
+  /** Filter by favorites of a user (username) */
+  favorited?: string;
+  /**
+   * The number of items to skip before starting to collect the result set.
+   * @min 0
+   */
+  offset?: number;
+  /**
+   * The numbers of items to return.
+   * @min 1
+   * @default 20
+   */
+  limit?: number;
+};
+
+export type ArticlesFeedQuery = {
+  /**
+   * The number of items to skip before starting to collect the result set.
+   * @min 0
+   */
+  offset?: number;
+  /**
+   * The numbers of items to return.
+   * @min 1
+   * @default 20
+   */
+  limit?: number;
+};
+
 export type ErrorModelDto = GenericErrorModelDto | UnexpectedErrorModelDto;
 
 export type QueryParamsType = Record<string | number, any>;
@@ -537,22 +571,7 @@ export class Api<
      * @request GET:/articles/feed
      * @secure
      */
-    getArticlesFeed: (
-      query?: {
-        /**
-         * The number of items to skip before starting to collect the result set.
-         * @min 0
-         */
-        offset?: number;
-        /**
-         * The numbers of items to return.
-         * @min 1
-         * @default 20
-         */
-        limit?: number;
-      },
-      params: RequestParams = {},
-    ) =>
+    getArticlesFeed: (query?: ArticlesFeedQuery, params: RequestParams = {}) =>
       this.request<
         {
           articles: ArticleDto[];
@@ -575,28 +594,7 @@ export class Api<
      * @summary Get recent articles globally
      * @request GET:/articles
      */
-    getArticles: (
-      query?: {
-        /** Filter by tag */
-        tag?: string;
-        /** Filter by author (username) */
-        author?: string;
-        /** Filter by favorites of a user (username) */
-        favorited?: string;
-        /**
-         * The number of items to skip before starting to collect the result set.
-         * @min 0
-         */
-        offset?: number;
-        /**
-         * The numbers of items to return.
-         * @min 1
-         * @default 20
-         */
-        limit?: number;
-      },
-      params: RequestParams = {},
-    ) =>
+    getArticles: (query?: ArticlesQuery, params: RequestParams = {}) =>
       this.request<
         {
           articles: ArticleDto[];

@@ -1,43 +1,62 @@
+import { createMutation, createQuery } from '@farfetched/core';
 import { attach } from 'effector';
 import { RequestParams } from '~shared/api/realworld';
 import { $ctx } from '~shared/ctx';
-import { mapProfile } from './lib';
+import { profileContract } from './types';
 
-type GetProfileParams = { username: string; params?: RequestParams };
+export type ProfileQueryParams = { username: string; params?: RequestParams };
 
-export const getProfileFx = attach({
-  source: $ctx,
-  effect: async (ctx, { username, params }: GetProfileParams) => {
-    const response = await ctx.restClient.profiles.getProfileByUsername(
-      username,
-      params,
-    );
-    return mapProfile(response.data.profile);
-  },
+export const profileQuery = createQuery({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { username, params }: ProfileQueryParams) => {
+      const response = await ctx.restClient.profiles.getProfileByUsername(
+        username,
+        params,
+      );
+      return response.data.profile as unknown;
+    },
+  }),
+  contract: profileContract,
+  name: 'profileQuery',
 });
 
-type FollowProfileParams = { username: string; params?: RequestParams };
+export type FollowProfileMutationParams = {
+  username: string;
+  params?: RequestParams;
+};
 
-export const followProfileFx = attach({
-  source: $ctx,
-  effect: async (ctx, { username, params }: FollowProfileParams) => {
-    const response = await ctx.restClient.profiles.followUserByUsername(
-      username,
-      params,
-    );
-    return mapProfile(response.data.profile);
-  },
+export const followProfileMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { username, params }: FollowProfileMutationParams) => {
+      const response = await ctx.restClient.profiles.followUserByUsername(
+        username,
+        params,
+      );
+      return response.data.profile as unknown;
+    },
+  }),
+  contract: profileContract,
+  name: 'followProfileMutation',
 });
 
-type UnfollowProfileParams = { username: string; params?: RequestParams };
+export type UnfollowProfileParams = {
+  username: string;
+  params?: RequestParams;
+};
 
-export const unfollowProfileFx = attach({
-  source: $ctx,
-  effect: async (ctx, { username, params }: UnfollowProfileParams) => {
-    const response = await ctx.restClient.profiles.unfollowUserByUsername(
-      username,
-      params,
-    );
-    return mapProfile(response.data.profile);
-  },
+export const unfollowProfileMutation = createMutation({
+  effect: attach({
+    source: $ctx,
+    effect: async (ctx, { username, params }: UnfollowProfileParams) => {
+      const response = await ctx.restClient.profiles.unfollowUserByUsername(
+        username,
+        params,
+      );
+      return response.data.profile as unknown;
+    },
+  }),
+  contract: profileContract,
+  name: 'unfollowProfileMutation',
 });

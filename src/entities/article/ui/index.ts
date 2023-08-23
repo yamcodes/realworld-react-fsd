@@ -1,5 +1,2 @@
-export { ArticleMeta } from './article-meta/ArticleMeta';
-export { ArticlePreviewCard } from './article-preview-card/ArticlePreviewCard';
-export { ArticlesList } from './articles-list/ArticlesList';
-export { ArticleEditor } from './article-editor/ArticleEditor';
-export { ArticlePreview } from './article/ui';
+export { ArticleMeta } from './article-meta/ui';
+export { ArticlePreview } from './article-preview/ui';

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { IoCreateOutline, IoSettingsSharp } from 'react-icons/io5';
 import { NavLink, Outlet } from 'react-router-dom';
 import { $$sessionModel } from '~entities/session';
-import { PATH_PAGE } from '~shared/lib/react-router';
+import { PATH_PAGE } from '~shared/lib/router';
 
 export function MainLayout() {
   const user = useUnit($$sessionModel.$visitor);

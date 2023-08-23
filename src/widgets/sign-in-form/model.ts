@@ -33,7 +33,7 @@ export function createModel() {
 
   sample({
     clock: init,
-    target: [$$sessionSignIn.reset, $$signinForm.reset],
+    target: $$signinForm.reset,
   });
 
   sample({

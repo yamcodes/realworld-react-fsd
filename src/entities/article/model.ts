@@ -6,7 +6,7 @@ import {
   combine,
   sample,
 } from 'effector';
-import { Query } from './types';
+import { ArticlesQuery } from '~shared/api/realworld';
 
 export type QueryInit = {
   filter?: FilterInit;
@@ -57,7 +57,7 @@ export function createQueryModel() {
   };
 }
 
-type PaginationQuery = Required<Pick<Query, 'limit' | 'offset'>>;
+type PaginationQuery = Required<Pick<ArticlesQuery, 'limit' | 'offset'>>;
 
 type PaginationInit = {
   page?: number;
@@ -103,7 +103,7 @@ export function createPaginationModel() {
   return { init, reset, nextPage, pageChanged, $query };
 }
 
-type FilterQuery = Pick<Query, 'author' | 'favorited' | 'tag'>;
+type FilterQuery = Pick<ArticlesQuery, 'author' | 'favorited' | 'tag'>;
 
 export type FilterInit = {
   key: keyof FilterQuery;

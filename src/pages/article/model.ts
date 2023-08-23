@@ -1,4 +1,4 @@
-import { createQuery } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, sample, restore, combine, createStore } from 'effector';
 import { Article, articleApi } from '~entities/article';
 import { $$sessionModel, User } from '~entities/session';
@@ -25,10 +25,7 @@ const createModel = () => {
 
   const $slug = restore(opened, null);
 
-  const articleQuery = createQuery({
-    handler: articleApi.getArticleFx,
-    name: 'articleQuery',
-  });
+  const articleQuery = attachOperation(articleApi.articleQuery);
 
   sample({
     clock: [opened, update],

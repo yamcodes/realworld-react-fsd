@@ -1,19 +1,18 @@
-import { createMutation } from '@farfetched/core';
+import { attachOperation } from '@farfetched/core';
 import { createEvent, sample } from 'effector';
 import { commentApi } from '~entities/comment';
 
 export type DeleteCommentModel = ReturnType<typeof createModel>;
 
 export function createModel() {
-  const remove = createEvent<commentApi.DeleteCommentParams>();
+  const remove = createEvent<commentApi.DeleteCommentMutationParams>();
   const mutated = createEvent<string>();
   const failure = createEvent<unknown>();
   const settled = createEvent();
 
-  const deleteCommentMutation = createMutation({
-    handler: commentApi.deleteCommentFx,
-    name: 'deleteCommentMutation',
-  });
+  const deleteCommentMutation = attachOperation(
+    commentApi.deleteCommentMutation,
+  );
 
   sample({
     clock: remove,

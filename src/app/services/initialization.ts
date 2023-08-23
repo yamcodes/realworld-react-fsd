@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { attachReduxDevTools } from '@effector/redux-devtools-adapter';
 import { allSettled, fork, combine, sample } from 'effector';
 import { $$sessionModel } from '~entities/session';
 import { $ctx } from '~shared/ctx';
@@ -38,6 +40,11 @@ export async function init() {
   for await (const initialize of initializers) {
     await allSettled(initialize, { scope });
   }
+
+  attachReduxDevTools({
+    name: 'My App',
+    scope,
+  });
 
   return { scope };
 }

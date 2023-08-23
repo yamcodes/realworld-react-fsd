@@ -1,6 +1,4 @@
 import { createEvent, sample } from 'effector';
-import { $$sessionModel } from '~entities/session';
-import { $ctx } from '~shared/ctx';
 import { createLoaderEffect } from '~shared/lib/router';
 import { signinFormModel } from '~widgets/sign-in-form';
 
