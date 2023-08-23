@@ -1,1 +1,2 @@
-export { CommentsList } from './ui/comments-list/CommentsList';
+export * as commentsListModel from './model';
+export { CommentsList } from './ui';

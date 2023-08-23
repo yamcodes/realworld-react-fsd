@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
 import { PATH_PAGE } from '~shared/lib/react-router';
-import { Comment } from '../../api/commentApi';
+import { Comment } from '../../types';
 
 type CommentCardProps = {
   comment: Comment;
@@ -16,7 +16,7 @@ export function CommentCard(props: CommentCardProps) {
   const formatedDate = dayjs(createdAt).format('MMMM D, YYYY');
 
   return (
-    <div key={comment.id} className="card">
+    <div className="card">
       <div className="card-block">
         <p className="card-text">{comment.body}</p>
       </div>

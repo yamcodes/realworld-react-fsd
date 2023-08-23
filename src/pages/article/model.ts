@@ -9,6 +9,8 @@ import {
 } from '~features/article';
 import { followModel, unfollowModel } from '~features/profile';
 import { createLoaderEffect } from '~shared/lib/router';
+import { commentFormModel } from '~widgets/comment-form';
+import { commentsListModel } from '~widgets/comments-list';
 
 const createModel = () => {
   const update = createEvent();
@@ -108,6 +110,25 @@ const createModel = () => {
     target: update,
   });
 
+  const $$commentForm = commentFormModel.createModel({
+    $article: articleQuery.$data,
+  });
+
+  // FIXME: clock
+  sample({
+    clock: articleQuery.finished.finally,
+    target: $$commentForm.init,
+  });
+
+  const $$commentsList = commentsListModel.createModel({
+    $article: articleQuery.$data,
+  });
+
+  sample({
+    clock: articleQuery.finished.finally,
+    target: $$commentsList.init,
+  });
+
   return {
     loaderFx,
     unmounted,
@@ -118,6 +139,8 @@ const createModel = () => {
     $$favoriteArticle,
     $$unfavoriteArticle,
     $$deleteArticle,
+    $$commentForm,
+    $$commentsList,
   };
 };
 

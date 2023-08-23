@@ -1,1 +1,2 @@
-export { DeleteCommentIconButtton } from './ui/delete-comment-icon-button/DeleteCommentIconButtton';
+export * as deleteCommentModel from './model';
+export { DeleteComment } from './ui';

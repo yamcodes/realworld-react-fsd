@@ -1,12 +1,19 @@
-import { createEvent, restore, sample } from 'effector';
+import { Store, createEvent, sample } from 'effector';
 import { string } from 'zod';
 import { Article } from '~entities/article';
-import { updateArticleModel } from '~features/article';
+import { $$sessionModel } from '~entities/session';
+import { createCommentModel } from '~features/comment';
 import { createFormModel } from '~shared/lib/form';
 
 export type CommentFormModel = Omit<ReturnType<typeof createModel>, 'init'>;
 
-export const createModel = () => {
+type CommentFormConfig = {
+  $article: Store<Article | null>;
+};
+
+export const createModel = (config: CommentFormConfig) => {
+  const { $article } = config;
+
   const init = createEvent();
   const submitted = createEvent();
   const unmounted = createEvent();
@@ -27,33 +34,22 @@ export const createModel = () => {
     target: $$commentForm.validate,
   });
 
-  const $$updateArticle = updateArticleModel.createModel();
+  const $$createComment = createCommentModel.createModel();
 
   sample({
-    clock: $$editorForm.validated.success,
-    source: {
-      updateArticle: $$editorForm.$form,
-      articleToEdit: $articleToEdit,
-    },
-    filter: ({ articleToEdit }) => Boolean(articleToEdit),
-    fn: ({
-      updateArticle,
-      articleToEdit,
-    }): updateArticleModel.UpdateArticleConfig => ({
-      prevArticle: articleToEdit!,
-      updateArticle: {
-        ...updateArticle!,
-        tagList: updateArticle?.tagList.split(',').map((tag) => tag.trim()),
-      },
-    }),
-    target: $$updateArticle.update,
+    clock: $$commentForm.validated.success,
+    source: { article: $article, comment: $$commentForm.$form },
+    filter: ({ article, comment }) => Boolean(article && comment),
+    fn: ({ article, comment }) => ({ slug: article!.slug, comment }),
+    target: $$createComment.create,
   });
 
   return {
     init,
     unmounted,
     submitted,
-    fields: $$editorForm.fields,
-    $pending: $$updateArticle.$pending,
+    fields: $$commentForm.fields,
+    $visitor: $$sessionModel.$visitor,
+    $pending: $$createComment.$pending,
   };
 };

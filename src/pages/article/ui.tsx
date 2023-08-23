@@ -2,6 +2,8 @@ import { useUnit } from 'effector-react';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
 import { ArticleMeta } from '~widgets/article-meta';
+import { CommentForm } from '~widgets/comment-form';
+import { CommentsList } from '~widgets/comments-list';
 import { $$articlePage } from './model';
 
 export function ArticlePage() {
@@ -99,8 +101,8 @@ export function ArticlePage() {
 
         <div className="row">
           <div className="col-xs-12 col-md-8 offset-md-2">
-            {/* <NewCommentEditor slug={slug!} /> */}
-            {/* <CommentsList slug={slug!} /> */}
+            <CommentForm $$model={$$articlePage.$$commentForm} />
+            <CommentsList $$model={$$articlePage.$$commentsList} />
           </div>
         </div>
       </div>

@@ -38,7 +38,7 @@ export const createCommentFx = attach({
   },
 });
 
-type DeleteCommentParams = {
+export type DeleteCommentParams = {
   slug: string;
   id: number;
   params?: RequestParams;
