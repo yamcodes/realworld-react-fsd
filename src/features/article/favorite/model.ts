@@ -7,7 +7,6 @@ export type FavoriteArticleModel = ReturnType<typeof createModel>;
 export function createModel() {
   const favorite = createEvent<Article>();
   const mutated = createEvent<Article>();
-  const settled = createEvent();
 
   const favoriteArticleMutation = attachOperation(
     articleApi.favoriteArticleMutation,
@@ -36,15 +35,10 @@ export function createModel() {
     target: mutated,
   });
 
-  sample({
-    clock: favoriteArticleMutation.finished.finally,
-    target: settled,
-  });
-
   return {
     favorite,
     mutated,
     failure: favoriteArticleMutation.finished.failure,
-    settled,
+    settled: favoriteArticleMutation.finished.finally,
   };
 }

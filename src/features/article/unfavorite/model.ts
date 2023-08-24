@@ -7,7 +7,6 @@ export type UnfavoriteArticleModel = ReturnType<typeof createModel>;
 export function createModel() {
   const unfavorite = createEvent<Article>();
   const mutated = createEvent<Article>();
-  const settled = createEvent();
 
   const unfavoriteArticleMutation = attachOperation(
     articleApi.unfavoriteArticleMutation,
@@ -36,15 +35,10 @@ export function createModel() {
     target: mutated,
   });
 
-  sample({
-    clock: unfavoriteArticleMutation.finished.finally,
-    target: settled,
-  });
-
   return {
     unfavorite,
     mutated,
     failure: unfavoriteArticleMutation.finished.failure,
-    settled,
+    settled: unfavoriteArticleMutation.finished.finally,
   };
 }

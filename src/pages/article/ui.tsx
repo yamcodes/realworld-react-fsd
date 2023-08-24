@@ -1,26 +1,34 @@
 import { useUnit } from 'effector-react';
+import { Link } from 'react-router-dom';
+import { PATH_PAGE } from '~shared/lib/router';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { FullPageWrapper } from '~shared/ui/full-page-wrapper';
+import { Spinner } from '~shared/ui/spinner';
 import { ArticleMeta } from '~widgets/article-meta';
 import { CommentForm } from '~widgets/comment-form';
 import { CommentsList } from '~widgets/comments-list';
 import { $$articlePage } from './model';
 
 export function ArticlePage() {
-  const { data: article, pending, error } = useUnit($$articlePage.articleQuery);
-  const articleCtx = useUnit($$articlePage.$articleCtx);
+  const [article, pending, error] = useUnit([
+    $$articlePage.$article,
+    $$articlePage.$pending,
+    $$articlePage.$error,
+  ]);
+
+  const access = useUnit($$articlePage.$access);
 
   if (pending)
     return (
       <FullPageWrapper>
-        <div>loading...</div>
+        <Spinner />
       </FullPageWrapper>
     );
 
   if (error)
     return (
       <FullPageWrapper>
-        <ErrorHandler error={error as any} />
+        <ErrorHandler error={error} />
       </FullPageWrapper>
     );
 
@@ -39,9 +47,9 @@ export function ArticlePage() {
         <div className="container">
           <h1>{title}</h1>
 
-          {articleCtx === 'anon' && <ArticleMeta.Anon article={article} />}
+          {access === 'anon' && <ArticleMeta.Anon article={article} />}
 
-          {articleCtx === 'auth' && (
+          {access === 'auth' && (
             <ArticleMeta.Auth
               article={article}
               $$favoriteModel={$$articlePage.$$favoriteArticle}
@@ -51,7 +59,7 @@ export function ArticlePage() {
             />
           )}
 
-          {articleCtx === 'owner' && (
+          {access === 'owner' && (
             <ArticleMeta.Owner
               article={article}
               $$deleteArticleModel={$$articlePage.$$deleteArticle}
@@ -79,9 +87,9 @@ export function ArticlePage() {
         <hr />
 
         <div className="article-actions">
-          {articleCtx === 'anon' && <ArticleMeta.Anon article={article} />}
+          {access === 'anon' && <ArticleMeta.Anon article={article} />}
 
-          {articleCtx === 'auth' && (
+          {access === 'auth' && (
             <ArticleMeta.Auth
               article={article}
               $$favoriteModel={$$articlePage.$$favoriteArticle}
@@ -91,7 +99,7 @@ export function ArticlePage() {
             />
           )}
 
-          {articleCtx === 'owner' && (
+          {access === 'owner' && (
             <ArticleMeta.Owner
               article={article}
               $$deleteArticleModel={$$articlePage.$$deleteArticle}
@@ -101,7 +109,18 @@ export function ArticlePage() {
 
         <div className="row">
           <div className="col-xs-12 col-md-8 offset-md-2">
-            <CommentForm $$model={$$articlePage.$$commentForm} />
+            {(access === 'auth' || access === 'owner') && (
+              <CommentForm $$model={$$articlePage.$$commentForm} />
+            )}
+
+            {access === 'anon' && (
+              <p>
+                <Link to={PATH_PAGE.login}>Sign in</Link> or{' '}
+                <Link to={PATH_PAGE.register}>sign up</Link> to add comments on
+                this article.
+              </p>
+            )}
+
             <CommentsList $$model={$$articlePage.$$commentsList} />
           </div>
         </div>

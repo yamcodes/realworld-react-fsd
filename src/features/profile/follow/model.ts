@@ -7,8 +7,6 @@ export type FollowProfileModel = ReturnType<typeof createModel>;
 export function createModel() {
   const follow = createEvent<Profile>();
   const mutated = createEvent<Profile>();
-  const failure = createEvent<unknown>();
-  const settled = createEvent();
 
   const followProfileMutation = attachOperation(
     profileApi.followProfileMutation,
@@ -32,21 +30,10 @@ export function createModel() {
     target: mutated,
   });
 
-  sample({
-    clock: followProfileMutation.finished.failure,
-    fn: ({ error }) => ({ error }),
-    target: failure,
-  });
-
-  sample({
-    clock: followProfileMutation.finished.finally,
-    target: settled,
-  });
-
   return {
     follow,
     mutated,
-    failure,
-    settled,
+    failure: followProfileMutation.finished.failure,
+    settled: followProfileMutation.finished.finally,
   };
 }

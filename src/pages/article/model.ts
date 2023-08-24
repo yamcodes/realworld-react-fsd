@@ -1,7 +1,7 @@
-import { attachOperation } from '@farfetched/core';
-import { createEvent, sample, restore, combine, createStore } from 'effector';
+import { attachOperation, isInvalidDataError } from '@farfetched/core';
+import { createEvent, sample, restore, createStore } from 'effector';
 import { Article, articleApi } from '~entities/article';
-import { $$sessionModel, User } from '~entities/session';
+import { $$sessionModel } from '~entities/session';
 import {
   deleteArticleModel,
   favoriteModel,
@@ -38,24 +38,17 @@ const createModel = () => {
     target: articleQuery.start,
   });
 
-  const $articleCtx = combine(
-    [articleQuery.$data, $$sessionModel.$visitor],
-    ([article, visitor]) => {
-      switch (true) {
-        case isAuth(visitor, article?.author.username || null):
-          return 'auth';
+  const $$accessModel = $$sessionModel.createAccessModel();
 
-        case isAnon(visitor, article?.author.username || null):
-          return 'anon';
-
-        case isOwner(visitor, article?.author.username || null):
-          return 'owner';
-
-        default:
-          return null;
-      }
-    },
-  );
+  sample({
+    clock: articleQuery.finished.success,
+    source: { visitor: $$sessionModel.$visitor, article: articleQuery.$data },
+    fn: ({ visitor, article }) => ({
+      visitor,
+      username: article!.author.username,
+    }),
+    target: $$accessModel.init,
+  });
 
   const $$followProfile = followModel.createModel();
   const $$unfollowProfile = unfollowModel.createModel();
@@ -64,6 +57,22 @@ const createModel = () => {
   const $$unfavoriteArticle = unfavoriteModel.createModel();
 
   const $$deleteArticle = deleteArticleModel.createModel();
+
+  const $error = createStore<string | null>(null)
+    .on(
+      [
+        articleQuery.finished.failure,
+        $$followProfile.failure,
+        $$unfollowProfile.failure,
+        $$favoriteArticle.failure,
+        $$unfavoriteArticle.failure,
+      ],
+      (_, data) => {
+        if (isInvalidDataError(data)) return data.error.explanation;
+        return (data.error as Error).message;
+      },
+    )
+    .reset(opened);
 
   const $mutatedArticle = createStore<Article | null>(null)
     .on(
@@ -89,16 +98,6 @@ const createModel = () => {
 
   sample({
     clock: [
-      $$followProfile.failure,
-      $$unfollowProfile.failure,
-      $$favoriteArticle.failure,
-      $$unfavoriteArticle.failure,
-    ],
-    target: articleQuery.$error,
-  });
-
-  sample({
-    clock: [
       $$followProfile.settled,
       $$unfollowProfile.settled,
       $$favoriteArticle.settled,
@@ -111,7 +110,6 @@ const createModel = () => {
     $article: articleQuery.$data,
   });
 
-  // FIXME: clock
   sample({
     clock: articleQuery.finished.finally,
     target: $$commentForm.init,
@@ -129,8 +127,10 @@ const createModel = () => {
   return {
     loaderFx,
     unmounted,
-    articleQuery,
-    $articleCtx,
+    $access: $$accessModel.$access,
+    $article: articleQuery.$data,
+    $pending: articleQuery.$pending,
+    $error,
     $$followProfile,
     $$unfollowProfile,
     $$favoriteArticle,
@@ -140,14 +140,5 @@ const createModel = () => {
     $$commentsList,
   };
 };
-
-const isAuth = (visitor: User | null, username: string | null) =>
-  Boolean(visitor && username && visitor.username !== username);
-
-const isOwner = (visitor: User | null, username: string | null) =>
-  Boolean(visitor && username && visitor.username === username);
-
-const isAnon = (visitor: User | null, username: string | null) =>
-  Boolean(!visitor && username);
 
 export const { loaderFx, ...$$articlePage } = createModel();

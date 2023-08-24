@@ -14,14 +14,12 @@ import { PATH_PAGE } from '~shared/lib/router';
 import { mainArticleListModel } from '~widgets/main-article-list';
 import { profileInfoModel } from '~widgets/profile-info';
 
-export type Access = 'anon' | 'auth' | 'owner' | null;
 export type Tab = 'author' | 'favorited';
 
-const createModel = () => {
+function createModel() {
   const opened = createEvent<string>();
   const unmounted = createEvent();
 
-  const $access = createStore<Access>(null);
   const $tab = createStore<Tab>('author');
   const $username = restore(opened, null);
 
@@ -30,25 +28,19 @@ const createModel = () => {
     value: username!,
   }));
 
-  const accessApi = createApi($access, {
-    anon: () => 'anon',
-    auth: () => 'auth',
-    owner: () => 'owner',
-  });
-
   const tabApi = createApi($tab, {
     author: () => 'author',
     favorited: () => 'favorited',
   });
+
+  const $$accessModel = $$sessionModel.createAccessModel();
 
   const loaderFx = attach({
     source: $$sessionModel.$visitor,
     effect: async (visitor, args: LoaderFunctionArgs) => {
       const username = args.params!.username!;
 
-      if (!visitor) accessApi.anon();
-      if (visitor && username !== visitor.username) accessApi.auth();
-      if (visitor && username === visitor.username) accessApi.owner();
+      $$accessModel.init({ visitor, username });
 
       const pathname = decodeURI(new URL(args.request.url).pathname);
 
@@ -70,21 +62,21 @@ const createModel = () => {
 
   sample({
     clock: opened,
-    source: $access,
+    source: $$accessModel.$access,
     filter: (access) => access === 'anon',
     target: $$profileInfo.anon.init,
   });
 
   sample({
     clock: opened,
-    source: $access,
+    source: $$accessModel.$access,
     filter: (access) => access === 'auth',
     target: $$profileInfo.auth.init,
   });
 
   sample({
     clock: opened,
-    source: $access,
+    source: $$accessModel.$access,
     filter: (access) => access === 'owner',
     target: $$profileInfo.owner.init,
   });
@@ -110,12 +102,12 @@ const createModel = () => {
     loaderFx,
     unmounted,
     $username,
-    $access,
+    $access: $$accessModel.$access,
     $tab,
     $$profileInfo,
     $$filterModel,
     $$mainArticleList,
   };
-};
+}
 
 export const { loaderFx, ...$$profilePage } = createModel();

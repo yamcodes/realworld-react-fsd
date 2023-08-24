@@ -1,8 +1,15 @@
 import { attachOperation } from '@farfetched/core';
-import { attach, createEvent, createStore, sample } from 'effector';
+import {
+  attach,
+  createEvent,
+  createStore,
+  sample,
+  createApi,
+  split,
+} from 'effector';
 import { $ctx } from '~shared/ctx';
 import { currentUserQuery } from './api';
-import { User } from './types';
+import { Access, User } from './types';
 
 function createSessionModel() {
   const init = createEvent();
@@ -75,3 +82,34 @@ function createSessionModel() {
 }
 
 export const { init, update, clear, $visitor } = createSessionModel();
+
+export function createAccessModel() {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  const init = createEvent<{ visitor: User | null; username: string }>();
+
+  const $access = createStore<Access>(null).reset(init);
+
+  const accessApi = createApi($access, {
+    anon: () => 'anon',
+    auth: () => 'auth',
+    owner: () => 'owner',
+  });
+
+  split({
+    source: init,
+    match: {
+      anon: ({ visitor }) => !visitor,
+      auth: ({ visitor, username }) =>
+        !!visitor && username !== visitor.username,
+      owner: ({ visitor, username }) =>
+        !!visitor && username === visitor.username,
+    },
+    cases: {
+      anon: accessApi.anon,
+      auth: accessApi.auth,
+      owner: accessApi.owner,
+    },
+  });
+
+  return { init, $access };
+}

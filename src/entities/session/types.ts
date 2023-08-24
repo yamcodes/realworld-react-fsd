@@ -32,6 +32,7 @@ export type LoginUser = z.infer<typeof loginUserSchema>;
 export type NewUser = z.infer<typeof newUserSchema>;
 export type User = z.infer<typeof userSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
+export type Access = 'anon' | 'auth' | 'owner' | null;
 
 export const loginUserContract = zodContract(loginUserSchema);
 export const newUserContract = zodContract(newUserSchema);
