@@ -1,59 +1,10 @@
-import { ChangeEvent, FormEventHandler, useEffect } from 'react';
+import { FormEventHandler, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
-import { FormFieldModel } from '~shared/lib/form';
 import { PATH_PAGE } from '~shared/lib/router';
 import { ErrorHandler } from '~shared/ui/error-handler';
+import { Input } from '~shared/ui/input';
 import { SigninFormModel } from './model';
-
-type FieldType = {
-  $$model: FormFieldModel<string>;
-};
-
-function EmailField(props: FieldType) {
-  const { $$model } = props;
-  const [value, error] = useUnit([$$model.$value, $$model.$error]);
-  const [changed, touched] = useUnit([$$model.changed, $$model.touched]);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
-    changed(e.target.value);
-  return (
-    <fieldset className="form-group">
-      <input
-        className="form-control form-control-lg"
-        type="text"
-        placeholder="Email"
-        value={value}
-        onChange={handleChange}
-        onBlur={touched}
-      />
-      {error && <div>{error.map((e) => e)}</div>}
-    </fieldset>
-  );
-}
-
-function PasswordField(props: FieldType) {
-  const { $$model } = props;
-  const [value, error] = useUnit([$$model.$value, $$model.$error]);
-  const [changed, touched] = useUnit([$$model.changed, $$model.touched]);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
-    changed(e.target.value);
-
-  return (
-    <fieldset className="form-group">
-      <input
-        className="form-control form-control-lg"
-        type="password"
-        placeholder="Password"
-        value={value}
-        onChange={handleChange}
-        onBlur={touched}
-      />
-      {error && <div>{error.map((e) => e)}</div>}
-    </fieldset>
-  );
-}
 
 type SigninFormProps = {
   $$model: SigninFormModel;
@@ -85,8 +36,18 @@ export function SigninForm(props: SigninFormProps) {
 
       <form onSubmit={onFormSubmit}>
         <fieldset disabled={pending}>
-          <EmailField $$model={$$model.fields.email} />
-          <PasswordField $$model={$$model.fields.password} />
+          <Input
+            className="form-control form-control-lg"
+            type="text"
+            placeholder="Email"
+            $$model={$$model.fields.email}
+          />
+          <Input
+            className="form-control form-control-lg"
+            type="password"
+            placeholder="Password"
+            $$model={$$model.fields.password}
+          />
           <button
             type="submit"
             className="btn btn-lg btn-primary pull-xs-right"

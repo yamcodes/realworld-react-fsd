@@ -1,4 +1,4 @@
-import { attachOperation } from '@farfetched/core';
+import { attachOperation, isInvalidDataError } from '@farfetched/core';
 import { createEvent, createStore, sample, combine } from 'effector';
 import { equals, and, not } from 'patronum';
 import { Article, articleApi, articleModel } from '~entities/article';
@@ -40,8 +40,6 @@ export function createModel(config: MainArticleListConfgi) {
   const $pendingNextPage = createStore(false)
     .on($$pagination.nextPage, () => true)
     .on(articlesQuery.finished.finally, () => false);
-
-  const { $error } = articlesQuery;
 
   const $data = createStore<{
     articles: Article[];
@@ -117,6 +115,20 @@ export function createModel(config: MainArticleListConfgi) {
     (_, article) => article,
   );
 
+  const $error = createStore<string | null>(null)
+    .on(
+      [
+        articlesQuery.finished.failure,
+        $$favoriteArticle.failure,
+        $$unfavoriteArticle.failure,
+      ],
+      (_, data) => {
+        if (isInvalidDataError(data)) return data.error.explanation;
+        return (data.error as Error).message;
+      },
+    )
+    .reset(init);
+
   sample({
     clock: [$$favoriteArticle.mutated, $$unfavoriteArticle.mutated],
     source: {
@@ -130,11 +142,6 @@ export function createModel(config: MainArticleListConfgi) {
       articlesCount: data.articlesCount,
     }),
     target: $data,
-  });
-
-  sample({
-    clock: [$$favoriteArticle.failure, $$unfavoriteArticle.failure],
-    target: $error,
   });
 
   // TODO:

@@ -103,7 +103,7 @@ export function createPaginationModel() {
   return { init, reset, nextPage, pageChanged, $query };
 }
 
-type FilterQuery = Pick<ArticlesQuery, 'author' | 'favorited' | 'tag'>;
+export type FilterQuery = Pick<ArticlesQuery, 'author' | 'favorited' | 'tag'>;
 
 export type FilterInit = {
   key: keyof FilterQuery;

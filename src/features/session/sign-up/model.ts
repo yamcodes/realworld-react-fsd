@@ -22,6 +22,7 @@ export function createModel() {
   return {
     signup,
     failure: signupMutation.finished.failure,
+    success: signupMutation.finished.success,
     $pending: signupMutation.$pending,
   };
 }

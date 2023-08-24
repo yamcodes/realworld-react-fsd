@@ -21,6 +21,7 @@ export const commentsQuery = createQuery({
     },
   }),
   contract: commentsContract,
+  initialData: [],
   name: 'commentsQuery',
 });
 

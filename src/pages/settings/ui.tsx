@@ -1,10 +1,9 @@
 import { useUnit } from 'effector-react';
-import { $$sessionModel } from '~entities/session';
 import { UserSettingsForm } from '~widgets/user-settings-form';
 import { $$settingsPage } from './model';
 
 export function SettingsPage() {
-  const clearSession = useUnit($$sessionModel.clear);
+  const signout = useUnit($$settingsPage.$$sessionSignout.signout);
 
   return (
     <div className="settings-page">
@@ -20,7 +19,7 @@ export function SettingsPage() {
             <button
               className="btn btn-outline-danger"
               type="button"
-              onClick={clearSession}
+              onClick={signout}
             >
               Or click here to logout.
             </button>

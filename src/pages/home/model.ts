@@ -6,11 +6,7 @@ import { mainArticleListModel } from '~widgets/main-article-list';
 import { popularTagsModel } from '~widgets/popular-tags';
 import { userArticleListModel } from '~widgets/user-article-list';
 
-type Tab = {
-  userFeed?: boolean;
-  globalFeed?: boolean;
-  tagFeed?: string;
-};
+export type Tab = 'all' | 'author' | 'tag';
 
 export type HomePageModel = Omit<ReturnType<typeof createModel>, 'loaderFx'>;
 
@@ -23,15 +19,18 @@ const createModel = () => {
     return null;
   });
 
-  const $activeTab = createStore<Tab>({ globalFeed: true }).reset(opened);
+  const $tab = createStore<Tab>('all').reset(opened);
 
-  const tab = createApi($activeTab, {
-    userFeed: () => ({ userFeed: true }),
-    globalFeed: () => ({ globalFeed: true }),
-    tagFeed: (_, tag: string) => ({ tagFeed: tag }),
+  const tabApi = createApi($tab, {
+    all: () => 'all',
+    author: () => 'author',
+    tag: () => 'tag',
   });
 
   const $$popularTags = popularTagsModel.createModel();
+  const $tag = createStore<string | null>(null)
+    .on($$popularTags.tagClicked, (_, tag) => tag)
+    .reset(opened);
 
   sample({
     clock: opened,
@@ -46,7 +45,7 @@ const createModel = () => {
   });
 
   sample({
-    clock: tab.userFeed,
+    clock: tabApi.author,
     source: $$sessionModel.$visitor,
     filter: Boolean,
     fn: ({ username }) => username,
@@ -54,13 +53,13 @@ const createModel = () => {
   });
 
   sample({
-    clock: tab.globalFeed,
+    clock: tabApi.all,
     target: $$filterModel.filterBy.all,
   });
 
   sample({
     clock: $$popularTags.tagClicked,
-    target: [$$filterModel.filterBy.tag, tab.tagFeed],
+    target: [$$filterModel.filterBy.tag, tabApi.tag],
   });
 
   const $$mainArticleList = mainArticleListModel.createModel({
@@ -68,22 +67,23 @@ const createModel = () => {
   });
 
   sample({
-    clock: [opened, tab.globalFeed, tab.tagFeed],
+    clock: [opened, tabApi.all, tabApi.tag],
     target: $$mainArticleList.init,
   });
 
   const $$userArticleList = userArticleListModel.createModel();
 
   sample({
-    clock: tab.userFeed,
+    clock: tabApi.author,
     target: $$userArticleList.init,
   });
 
   return {
     loaderFx,
     unmounted,
-    tab,
-    $activeTab,
+    tabApi,
+    $tab,
+    $tag,
     $$filterModel,
     $$userArticleList,
     $$mainArticleList,

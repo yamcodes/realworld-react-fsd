@@ -3,6 +3,7 @@ import { string } from 'zod';
 import { NewArticle } from '~entities/article';
 import { createArticleModel } from '~features/article';
 import { createFormModel } from '~shared/lib/form';
+import { toArticleFx } from '~shared/lib/router';
 
 export type NewModel = Omit<ReturnType<typeof createNewModel>, 'init'>;
 
@@ -54,6 +55,12 @@ export const createNewModel = () => {
         : [],
     }),
     target: $$createArticle.create,
+  });
+
+  sample({
+    clock: $$createArticle.success,
+    fn: ({ slug }) => slug,
+    target: toArticleFx,
   });
 
   return {

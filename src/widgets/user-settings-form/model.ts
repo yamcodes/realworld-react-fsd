@@ -1,7 +1,10 @@
+import { isInvalidDataError } from '@farfetched/core';
 import { createEvent, createStore, sample } from 'effector';
 import { string } from 'zod';
+import { $$sessionModel } from '~entities/session';
 import { sessionUpdateModel } from '~features/session';
 import { createFormModel } from '~shared/lib/form';
+import { toProfileFx } from '~shared/lib/router';
 
 export type UserSettingsFormModel = Omit<
   ReturnType<typeof createModel>,
@@ -46,6 +49,14 @@ export function createModel() {
   });
 
   sample({
+    clock: init,
+    source: $$sessionModel.$visitor,
+    filter: Boolean,
+    fn: ({ image, username, bio, email }) => ({ image, username, bio, email }),
+    target: $$userSettingsForm.setForm,
+  });
+
+  sample({
     clock: submitted,
     target: $$userSettingsForm.validate,
   });
@@ -56,14 +67,18 @@ export function createModel() {
     target: $$sessionUpdate.update,
   });
 
-  const $error = createStore<unknown>(null)
-    .on($$sessionUpdate.failure, (_, { error }) => error)
+  const $error = createStore<string | null>(null)
+    .on($$sessionUpdate.failure, (_, data) => {
+      if (isInvalidDataError(data)) return data.error.explanation;
+      return (data.error as Error).message;
+    })
     .reset(init);
 
-  // sample({
-  //   clock: $$sessionModel.update,
-  //   target: toHomeFx,
-  // });
+  sample({
+    clock: $$sessionUpdate.success,
+    fn: ({ result: visitor }) => visitor.username,
+    target: toProfileFx,
+  });
 
   return {
     init,

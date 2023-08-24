@@ -7,7 +7,6 @@ export type FavoriteArticleModel = ReturnType<typeof createModel>;
 export function createModel() {
   const favorite = createEvent<Article>();
   const mutated = createEvent<Article>();
-  const failure = createEvent<unknown>();
   const settled = createEvent();
 
   const favoriteArticleMutation = attachOperation(
@@ -38,12 +37,6 @@ export function createModel() {
   });
 
   sample({
-    clock: favoriteArticleMutation.finished.failure,
-    fn: ({ error }) => ({ error }),
-    target: failure,
-  });
-
-  sample({
     clock: favoriteArticleMutation.finished.finally,
     target: settled,
   });
@@ -51,7 +44,7 @@ export function createModel() {
   return {
     favorite,
     mutated,
-    failure,
+    failure: favoriteArticleMutation.finished.failure,
     settled,
   };
 }

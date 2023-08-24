@@ -14,7 +14,7 @@ export function createModel() {
   const update = createEvent<UpdateArticleConfig>();
   const mutated = createEvent<Article>();
   const failure = createEvent<unknown>();
-  const settled = createEvent();
+  const success = createEvent<Article>();
 
   const updateArticleMutation = attachOperation(
     articleApi.updateArticleMutation,
@@ -64,15 +64,16 @@ export function createModel() {
   });
 
   sample({
-    clock: updateArticleMutation.finished.finally,
-    target: settled,
+    clock: updateArticleMutation.finished.success,
+    fn: ({ result: article }) => article,
+    target: success,
   });
 
   return {
     update,
     mutated,
     failure,
-    settled,
+    success,
     $pending: updateArticleMutation.$pending,
   };
 }

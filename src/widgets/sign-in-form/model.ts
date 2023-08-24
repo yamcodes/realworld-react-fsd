@@ -1,7 +1,6 @@
 import { isInvalidDataError } from '@farfetched/core';
 import { createEvent, createStore, sample } from 'effector';
 import { string } from 'zod';
-import { $$sessionModel } from '~entities/session';
 import { sessionSigninModel } from '~features/session';
 import { createFormModel } from '~shared/lib/form';
 import { toHomeFx } from '~shared/lib/router';
@@ -52,14 +51,9 @@ export function createModel() {
     .reset(init);
 
   sample({
-    clock: $$sessionModel.update,
+    clock: $$sessionSignIn.success,
     target: toHomeFx,
   });
-
-  // sample({
-  //   clock: unmounted,
-  //   target: $$sessionSignIn.abort,
-  // });
 
   return {
     init,

@@ -1,82 +1,10 @@
-import { ChangeEvent, FormEventHandler, useEffect } from 'react';
+import { FormEventHandler, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
-import { FormFieldModel } from '~shared/lib/form';
 import { PATH_PAGE } from '~shared/lib/router';
 import { ErrorHandler } from '~shared/ui/error-handler';
+import { Input } from '~shared/ui/input';
 import { SignupFormModel } from './model';
-
-type FieldType = {
-  $$model: FormFieldModel<string>;
-};
-
-function UsernameField(props: FieldType) {
-  const { $$model } = props;
-  const [value, error] = useUnit([$$model.$value, $$model.$error]);
-  const [changed, touched] = useUnit([$$model.changed, $$model.touched]);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
-    changed(e.target.value);
-
-  return (
-    <fieldset className="form-group">
-      <input
-        className="form-control form-control-lg"
-        type="text"
-        placeholder="Your Name"
-        value={value}
-        onChange={handleChange}
-        onBlur={touched}
-      />
-      {error && <div>{error.map((e) => e)}</div>}
-    </fieldset>
-  );
-}
-
-function EmailField(props: FieldType) {
-  const { $$model } = props;
-  const [value, error] = useUnit([$$model.$value, $$model.$error]);
-  const [changed, touched] = useUnit([$$model.changed, $$model.touched]);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
-    changed(e.target.value);
-  return (
-    <fieldset className="form-group">
-      <input
-        className="form-control form-control-lg"
-        type="text"
-        placeholder="Email"
-        value={value}
-        onChange={handleChange}
-        onBlur={touched}
-      />
-      {error && <div>{error.map((e) => e)}</div>}
-    </fieldset>
-  );
-}
-
-function PasswordField(props: FieldType) {
-  const { $$model } = props;
-  const [value, error] = useUnit([$$model.$value, $$model.$error]);
-  const [changed, touched] = useUnit([$$model.changed, $$model.touched]);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
-    changed(e.target.value);
-
-  return (
-    <fieldset className="form-group">
-      <input
-        className="form-control form-control-lg"
-        type="password"
-        placeholder="Password"
-        value={value}
-        onChange={handleChange}
-        onBlur={touched}
-      />
-      {error && <div>{error.map((e) => e)}</div>}
-    </fieldset>
-  );
-}
 
 type SignupFormProps = {
   $$model: SignupFormModel;
@@ -85,10 +13,9 @@ type SignupFormProps = {
 export function SignupForm(props: SignupFormProps) {
   const { $$model } = props;
 
-  const [error, pending] = useUnit([
-    $$model.$$sessionSignUp.$error,
-    $$model.$$sessionSignUp.$pending,
-  ]);
+  const pending = useUnit($$model.$$sessionSignUp.$pending);
+  const error = useUnit($$model.$error);
+
   const [submited, unmounted] = useUnit([$$model.submitted, $$model.unmounted]);
 
   const onFormSubmit: FormEventHandler = (e) => {
@@ -105,13 +32,28 @@ export function SignupForm(props: SignupFormProps) {
         <Link to={PATH_PAGE.login}>Have an account?</Link>
       </p>
 
-      {error && <ErrorHandler error={error as any} />}
+      {error && <ErrorHandler error={error} />}
 
       <form onSubmit={onFormSubmit}>
         <fieldset disabled={pending}>
-          <UsernameField $$model={$$model.fields.username} />
-          <EmailField $$model={$$model.fields.email} />
-          <PasswordField $$model={$$model.fields.password} />
+          <Input
+            className="form-control form-control-lg"
+            type="text"
+            placeholder="Your Name"
+            $$model={$$model.fields.username}
+          />
+          <Input
+            className="form-control form-control-lg"
+            type="text"
+            placeholder="Email"
+            $$model={$$model.fields.email}
+          />
+          <Input
+            className="form-control form-control-lg"
+            type="password"
+            placeholder="Password"
+            $$model={$$model.fields.password}
+          />
           <button
             type="submit"
             className="btn btn-lg btn-primary pull-xs-right"

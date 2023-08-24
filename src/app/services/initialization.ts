@@ -36,15 +36,15 @@ export async function init() {
 
   const scope = fork();
 
-  // eslint-disable-next-line no-restricted-syntax
-  for await (const initialize of initializers) {
-    await allSettled(initialize, { scope });
-  }
-
   // attachReduxDevTools({
   //   name: 'My App',
   //   scope,
   // });
+
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const initialize of initializers) {
+    await allSettled(initialize, { scope });
+  }
 
   return { scope };
 }

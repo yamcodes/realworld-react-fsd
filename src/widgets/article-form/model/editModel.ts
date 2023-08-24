@@ -3,6 +3,7 @@ import { string } from 'zod';
 import { Article } from '~entities/article';
 import { updateArticleModel } from '~features/article';
 import { createFormModel } from '~shared/lib/form';
+import { toArticleFx } from '~shared/lib/router';
 
 export type EditModel = Omit<ReturnType<typeof createEditModel>, 'init'>;
 
@@ -63,6 +64,12 @@ export const createEditModel = () => {
       },
     }),
     target: $$updateArticle.update,
+  });
+
+  sample({
+    clock: $$updateArticle.success,
+    fn: ({ slug }) => slug,
+    target: toArticleFx,
   });
 
   return {

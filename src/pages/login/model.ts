@@ -1,29 +1,23 @@
-import { createEvent, sample } from 'effector';
-import { createLoaderEffect } from '~shared/lib/router';
+import { attach, createEvent, sample } from 'effector';
+import { redirect } from 'react-router-dom';
+import { $$sessionModel } from '~entities/session';
+import { PATH_PAGE } from '~shared/lib/router';
 import { signinFormModel } from '~widgets/sign-in-form';
 
 const createModel = () => {
   const opened = createEvent();
   const unmounted = createEvent();
 
-  // const toHomeFx = attach({
-  //   source: $ctx,
-  //   effect: (ctx) => ctx.router.navigate('/'),
-  // });
-
-  const loaderFx = createLoaderEffect(async () => {
-    opened();
-    return null;
+  const loaderFx = attach({
+    source: $$sessionModel.$visitor,
+    effect: async (visitor) => {
+      if (visitor) return redirect(PATH_PAGE.root);
+      opened();
+      return null;
+    },
   });
 
   const $$signinForm = signinFormModel.createModel();
-
-  // sample({
-  //   clock: opened,
-  //   source: $$sessionModel.$visitor,
-  //   filter: Boolean,
-  //   target: toHomeFx,
-  // });
 
   sample({
     clock: opened,

@@ -13,6 +13,11 @@ export function createModel() {
 
   sample({
     clock: init,
+    target: popularTagsQuery.reset,
+  });
+
+  sample({
+    clock: init,
     target: popularTagsQuery.start,
   });
 

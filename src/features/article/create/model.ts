@@ -9,7 +9,7 @@ export function createModel() {
   const create = createEvent<NewArticle>();
   const mutated = createEvent<Article>();
   const failure = createEvent<unknown>();
-  const settled = createEvent();
+  const success = createEvent<Article>();
 
   const createArticleMutation = attachOperation(
     articleApi.createArticleMutation,
@@ -57,15 +57,16 @@ export function createModel() {
   });
 
   sample({
-    clock: createArticleMutation.finished.finally,
-    target: settled,
+    clock: createArticleMutation.finished.success,
+    fn: ({ result: article }) => article,
+    target: success,
   });
 
   return {
     create,
     mutated,
     failure,
-    settled,
+    success,
     $pending: createArticleMutation.$pending,
   };
 }

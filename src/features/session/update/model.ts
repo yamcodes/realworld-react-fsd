@@ -22,6 +22,7 @@ export function createModel() {
   return {
     update,
     failure: updateUserMutation.finished.failure,
+    success: updateUserMutation.finished.success,
     $pending: updateUserMutation.$pending,
   };
 }

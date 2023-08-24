@@ -1,55 +1,66 @@
-import { combine, createEvent, restore, sample } from 'effector';
+import {
+  attach,
+  createEvent,
+  createStore,
+  restore,
+  sample,
+  createApi,
+  combine,
+} from 'effector';
+import { LoaderFunctionArgs } from 'react-router-dom';
 import { articleModel } from '~entities/article';
-import { $$sessionModel, User } from '~entities/session';
-import { createLoaderEffect } from '~shared/lib/router';
+import { $$sessionModel } from '~entities/session';
+import { PATH_PAGE } from '~shared/lib/router';
 import { mainArticleListModel } from '~widgets/main-article-list';
 import { profileInfoModel } from '~widgets/profile-info';
 
-export type PageCtx = {
-  username: string;
-  path: 'author' | 'favorited';
-};
+export type Access = 'anon' | 'auth' | 'owner' | null;
+export type Tab = 'author' | 'favorited';
 
 const createModel = () => {
-  const opened = createEvent<PageCtx>();
+  const opened = createEvent<string>();
   const unmounted = createEvent();
 
-  const usernameLoaderFx = createLoaderEffect(async (args) => {
-    const username = args.params!.username!;
-    opened({ username, path: 'author' });
-    return null;
+  const $access = createStore<Access>(null);
+  const $tab = createStore<Tab>('author');
+  const $username = restore(opened, null);
+
+  const $initFilter = combine($tab, $username, (tab, username) => ({
+    key: tab,
+    value: username!,
+  }));
+
+  const accessApi = createApi($access, {
+    anon: () => 'anon',
+    auth: () => 'auth',
+    owner: () => 'owner',
   });
 
-  const favoritesLoaderFx = createLoaderEffect(async (args) => {
-    const username = args.params!.username!;
-    opened({ username, path: 'favorited' });
-    return null;
+  const tabApi = createApi($tab, {
+    author: () => 'author',
+    favorited: () => 'favorited',
   });
 
-  const $pageCtx = restore(opened, null);
+  const loaderFx = attach({
+    source: $$sessionModel.$visitor,
+    effect: async (visitor, args: LoaderFunctionArgs) => {
+      const username = args.params!.username!;
 
-  const $username = $pageCtx.map(
-    (pageContext) => pageContext?.username || null,
-  );
+      if (!visitor) accessApi.anon();
+      if (visitor && username !== visitor.username) accessApi.auth();
+      if (visitor && username === visitor.username) accessApi.owner();
 
-  const $profileCtx = combine(
-    [$username, $$sessionModel.$visitor],
-    ([username, visitor]) => {
-      switch (true) {
-        case isAuth(visitor, username):
-          return 'auth';
+      const pathname = decodeURI(new URL(args.request.url).pathname);
 
-        case isAnon(visitor, username):
-          return 'anon';
+      if (pathname === PATH_PAGE.profile.root(username)) tabApi.author();
+      if (pathname === PATH_PAGE.profile.favorites(username))
+        tabApi.favorited();
 
-        case isOwner(visitor, username):
-          return 'owner';
+      opened(username);
 
-        default:
-          return null;
-      }
+      return null;
     },
-  );
+  });
 
   const $$profileInfo = {
     anon: profileInfoModel.createAnonModel({ $username }),
@@ -59,22 +70,22 @@ const createModel = () => {
 
   sample({
     clock: opened,
-    source: $profileCtx,
-    filter: (ctx) => ctx === 'anon',
+    source: $access,
+    filter: (access) => access === 'anon',
     target: $$profileInfo.anon.init,
   });
 
   sample({
     clock: opened,
-    source: $profileCtx,
-    filter: (ctx) => ctx === 'auth',
+    source: $access,
+    filter: (access) => access === 'auth',
     target: $$profileInfo.auth.init,
   });
 
   sample({
     clock: opened,
-    source: $profileCtx,
-    filter: (ctx) => ctx === 'owner',
+    source: $access,
+    filter: (access) => access === 'owner',
     target: $$profileInfo.owner.init,
   });
 
@@ -82,9 +93,7 @@ const createModel = () => {
 
   sample({
     clock: opened,
-    source: $pageCtx,
-    filter: Boolean,
-    fn: getInitialFilter,
+    source: $initFilter,
     target: $$filterModel.init,
   });
 
@@ -98,30 +107,15 @@ const createModel = () => {
   });
 
   return {
-    usernameLoaderFx,
-    favoritesLoaderFx,
+    loaderFx,
     unmounted,
-    $pageCtx,
-    $profileCtx,
+    $username,
+    $access,
+    $tab,
     $$profileInfo,
     $$filterModel,
     $$mainArticleList,
   };
 };
 
-const isAuth = (visitor: User | null, username: string | null) =>
-  Boolean(visitor && username && visitor.username !== username);
-
-const isOwner = (visitor: User | null, username: string | null) =>
-  Boolean(visitor && username && visitor.username === username);
-
-const isAnon = (visitor: User | null, username: string | null) =>
-  Boolean(!visitor && username);
-
-const getInitialFilter = (pageCtx: PageCtx): articleModel.FilterInit => ({
-  key: pageCtx.path,
-  value: pageCtx.username,
-});
-
-export const { usernameLoaderFx, favoritesLoaderFx, ...$$profilePage } =
-  createModel();
+export const { loaderFx, ...$$profilePage } = createModel();

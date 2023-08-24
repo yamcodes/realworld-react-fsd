@@ -7,7 +7,7 @@ import { UserArticleList } from '~widgets/user-article-list';
 import { $$homePage } from './model';
 
 export function HomePage() {
-  const activeTab = useUnit($$homePage.$activeTab);
+  const tab = useUnit($$homePage.$tab);
 
   return (
     <div className="home-page">
@@ -23,11 +23,11 @@ export function HomePage() {
           <div className="col-md-9">
             <ArticlesFeedTabs />
 
-            {activeTab.userFeed && (
+            {tab === 'author' && (
               <UserArticleList $$model={$$homePage.$$userArticleList} />
             )}
 
-            {(activeTab.globalFeed || activeTab.tagFeed) && (
+            {(tab === 'all' || tab === 'tag') && (
               <MainArticleList $$model={$$homePage.$$mainArticleList} />
             )}
           </div>
@@ -43,11 +43,13 @@ export function HomePage() {
 
 function ArticlesFeedTabs() {
   const auth = useUnit($$sessionModel.$visitor);
-  const activeTab = useUnit($$homePage.$activeTab);
-  const tab = useUnit($$homePage.tab);
+  const tag = useUnit($$homePage.$tag);
+  const tab = useUnit($$homePage.$tab);
 
-  const onUserFeedClicked = () => tab.userFeed();
-  const onGlobalFeedClicked = () => tab.globalFeed();
+  const tabApi = useUnit($$homePage.tabApi);
+
+  const onUserFeedClicked = () => tabApi.author();
+  const onGlobalFeedClicked = () => tabApi.all();
 
   return (
     <div className="feed-toggle">
@@ -55,7 +57,7 @@ function ArticlesFeedTabs() {
         {auth && (
           <li className="nav-item">
             <button
-              className={cn('nav-link', { active: activeTab.userFeed })}
+              className={cn('nav-link', { active: tab === 'author' })}
               type="button"
               onClick={onUserFeedClicked}
             >
@@ -65,17 +67,17 @@ function ArticlesFeedTabs() {
         )}
         <li className="nav-item">
           <button
-            className={cn('nav-link', { active: activeTab.globalFeed })}
+            className={cn('nav-link', { active: tab === 'all' })}
             type="button"
             onClick={onGlobalFeedClicked}
           >
             Global Feed
           </button>
         </li>
-        {activeTab?.tagFeed && (
+        {tab === 'tag' && (
           <li className="nav-item">
             <button className="nav-link active" type="button">
-              #{activeTab.tagFeed}
+              #{tag!}
             </button>
           </li>
         )}
