@@ -13,8 +13,8 @@ export default defineConfig({
         plugins: [['effector/babel-plugin', { addLoc: true }]],
       },
     }),
-    // eslint(),
-    // checker({ typescript: true }),
+    eslint(),
+    checker({ typescript: true }),
     unfonts({
       google: {
         families: [

@@ -54,15 +54,15 @@
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M917,-298.25C917,-298.25 1493,-298.25 1493,-298.25 1499,-298.25 1505,-304.25 1505,-310.25 1505,-310.25 1505,-340.75 1505,-340.75 1505,-346.75 1499,-352.75 1493,-352.75 1493,-352.75 917,-352.75 917,-352.75 911,-352.75 905,-346.75 905,-340.75 905,-340.75 905,-310.25 905,-310.25 905,-304.25 911,-298.25 917,-298.25"/>
 <text text-anchor="middle" x="1205" y="-340.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">pages</text>
 </g>
-<g id="clust11" class="cluster">
-<title>cluster_src/widgets</title>
-<path fill="#ffffff" stroke="black" stroke-width="2" d="M615,-235.75C615,-235.75 1518,-235.75 1518,-235.75 1524,-235.75 1530,-241.75 1530,-247.75 1530,-247.75 1530,-278.25 1530,-278.25 1530,-284.25 1524,-290.25 1518,-290.25 1518,-290.25 615,-290.25 615,-290.25 609,-290.25 603,-284.25 603,-278.25 603,-278.25 603,-247.75 603,-247.75 603,-241.75 609,-235.75 615,-235.75"/>
-<text text-anchor="middle" x="1066.5" y="-277.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">widgets</text>
-</g>
 <g id="clust10" class="cluster">
 <title>cluster_src/shared</title>
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M1418,-16C1418,-16 1596,-16 1596,-16 1602,-16 1608,-22 1608,-28 1608,-28 1608,-90.75 1608,-90.75 1608,-96.75 1602,-102.75 1596,-102.75 1596,-102.75 1418,-102.75 1418,-102.75 1412,-102.75 1406,-96.75 1406,-90.75 1406,-90.75 1406,-28 1406,-28 1406,-22 1412,-16 1418,-16"/>
 <text text-anchor="middle" x="1507" y="-90.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">shared</text>
+</g>
+<g id="clust11" class="cluster">
+<title>cluster_src/widgets</title>
+<path fill="#ffffff" stroke="black" stroke-width="2" d="M615,-235.75C615,-235.75 1518,-235.75 1518,-235.75 1524,-235.75 1530,-241.75 1530,-247.75 1530,-247.75 1530,-278.25 1530,-278.25 1530,-284.25 1524,-290.25 1518,-290.25 1518,-290.25 615,-290.25 615,-290.25 609,-290.25 603,-284.25 603,-278.25 603,-278.25 603,-247.75 603,-247.75 603,-241.75 609,-235.75 615,-235.75"/>
+<text text-anchor="middle" x="1066.5" y="-277.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">widgets</text>
 </g>
 <!-- src/app/index.tsx -->
 <g id="node1" class="node">

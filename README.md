@@ -21,7 +21,27 @@
 [![Code style: prettier][prettier-domain]](https://github.com/prettier/prettier)
 [![license][license-domain]](https://github.com/sldk-yuri/realworld-react-fsd/blob/master/LICENSE)
 
-# This is a test branch, there is a lot of unfinished code. I'm going to migrate to effector (actually add one more branch with effector showcase), some features might (not) work (from time to times).
+### An effector version.
+
+&minus; "@tanstack/react-query"\
+&minus; "@tanstack/react-query-devtools"\
+&minus; "formik"\
+&minus; "react-query"\
+&minus; "yup"\
+&minus; "zustand"
+
+&plus; "@farfetched/core"\
+&plus; "@farfetched/zod"\
+&plus; "effector"\
+&plus; "effector-react"\
+&plus; "patronum"\
+&plus; "zod"
+
+- [x] No more react lifecycle based business logic control.
+- [x] Better model/view separation.
+- [x] Better folders and files structure.
+- [x] More flow control.
+- [x] Smaller bundle size.
 
 # Features
 

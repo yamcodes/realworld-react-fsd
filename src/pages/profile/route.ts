@@ -14,6 +14,7 @@ const $$usernameRoute = createRoute(
     path: 'profile/:username',
     element: createElement(ProfilePage),
   },
+  // @ts-ignore
   { loaderFx },
 );
 
@@ -22,6 +23,7 @@ const $$usernameFavoritesRoute = createRoute(
     path: 'profile/:username/favorites',
     element: createElement(ProfilePage),
   },
+  // @ts-ignore
   { loaderFx },
 );
 
