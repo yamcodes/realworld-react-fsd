@@ -1,5 +1,13 @@
 import { createEffect } from 'effector';
-import { LoaderFunction, ActionFunction } from 'react-router-dom';
+import { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router-dom';
+
+type LoaderFunction = {
+  (args: LoaderFunctionArgs): Promise<Response | null> | Response | null;
+};
+
+type ActionFunction = {
+  (args: ActionFunctionArgs): Promise<Response | null> | Response | null;
+};
 
 export const createLoaderEffect = (handler: LoaderFunction) =>
   createEffect(handler);

@@ -1,7 +1,11 @@
 import { ReactNode, useEffect } from 'react';
 import { useList, useUnit } from 'effector-react';
+import { IoHeart } from 'react-icons/io5';
+import { Link } from 'react-router-dom';
 import { ArticlePreview } from '~entities/article';
+import { $$sessionModel } from '~entities/session';
 import { UnfavoriteArticle, FavoriteArticle } from '~features/article';
+import { PATH_PAGE } from '~shared/lib/router';
 import { Button } from '~shared/ui/button';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { MainArticleListModel } from './model';
@@ -29,21 +33,34 @@ export function MainArticleList(props: MainArticleListProps) {
     $$model.$pendingNextPage,
   ]);
 
+  const visitor = useUnit($$sessionModel.$visitor);
+
   const articlesList = useList($$model.$articles, (article) => (
     <ArticlePreview
       article={article}
       actions={
-        article.favorited ? (
-          <UnfavoriteArticle
-            article={article}
-            $$model={$$model.$$unfavoriteArticle}
-          />
-        ) : (
-          <FavoriteArticle
-            article={article}
-            $$model={$$model.$$favoriteArticle}
-          />
-        )
+        <>
+          {!visitor && (
+            <Link
+              to={PATH_PAGE.login}
+              className="btn btn-outline-primary btn-sm pull-xs-right"
+            >
+              <IoHeart size={16} /> {article.favoritesCount}
+            </Link>
+          )}
+          {visitor &&
+            (article.favorited ? (
+              <UnfavoriteArticle
+                article={article}
+                $$model={$$model.$$unfavoriteArticle}
+              />
+            ) : (
+              <FavoriteArticle
+                article={article}
+                $$model={$$model.$$favoriteArticle}
+              />
+            ))}
+        </>
       }
     />
   ));

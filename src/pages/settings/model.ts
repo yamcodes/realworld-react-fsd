@@ -1,5 +1,5 @@
 import { attach, createEvent, sample } from 'effector';
-import { redirect } from 'react-router-dom';
+import { LoaderFunctionArgs, redirect } from 'react-router-dom';
 import { $$sessionModel } from '~entities/session';
 import { sessionSignoutModel } from '~features/session';
 import { PATH_PAGE, toHomeFx } from '~shared/lib/router';
@@ -11,7 +11,7 @@ function createModel() {
 
   const loaderFx = attach({
     source: $$sessionModel.$visitor,
-    effect: async (visitor) => {
+    effect: async (visitor, _args: LoaderFunctionArgs) => {
       if (!visitor) return redirect(PATH_PAGE.root);
       opened();
       return null;

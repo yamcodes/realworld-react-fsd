@@ -59,7 +59,7 @@ export function UserArticleList(props: UserArticleListProps) {
 
       {error && (
         <ArticleWrapper>
-          <ErrorHandler error={error as any} />
+          <ErrorHandler error={error} />
         </ArticleWrapper>
       )}
 

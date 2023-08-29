@@ -1,5 +1,5 @@
-import { attachOperation } from '@farfetched/core';
-import { Store, createEvent, sample } from 'effector';
+import { attachOperation, isInvalidDataError } from '@farfetched/core';
+import { Store, createEvent, createStore, sample } from 'effector';
 import { profileApi } from '~entities/profile';
 import { followModel, unfollowModel } from '~features/profile';
 
@@ -38,19 +38,27 @@ export function createAuthModel(config: AuthConfig) {
 
   const $profile = profileQuery.$data;
   const { $pending } = profileQuery;
-  const { $error } = profileQuery;
 
   const $$followProfile = followModel.createModel();
   const $$unfollowProfile = unfollowModel.createModel();
 
+  const $error = createStore<string | null>(null)
+    .on(
+      [
+        profileQuery.finished.failure,
+        $$followProfile.failure,
+        $$unfollowProfile.failure,
+      ],
+      (_, data) => {
+        if (isInvalidDataError(data)) return data.error.explanation;
+        return (data.error as Error).message;
+      },
+    )
+    .reset(init);
+
   sample({
     clock: [$$followProfile.mutated, $$unfollowProfile.mutated],
     target: $profile,
-  });
-
-  sample({
-    clock: [$$followProfile.failure, $$unfollowProfile.failure],
-    target: $error,
   });
 
   sample({

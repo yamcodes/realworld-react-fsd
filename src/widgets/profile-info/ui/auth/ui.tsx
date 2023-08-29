@@ -33,9 +33,9 @@ export function Auth(props: AuthProps) {
             </ProfileWrapper>
           )}
 
-          {(error as any) && (
+          {error && (
             <ProfileWrapper>
-              <ErrorHandler error={error as any} />
+              <ErrorHandler error={error} />
             </ProfileWrapper>
           )}
 

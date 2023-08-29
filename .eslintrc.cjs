@@ -96,6 +96,15 @@ module.exports = {
       },
       plugins: ['@typescript-eslint/eslint-plugin', 'effector'],
       rules: {
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+            caughtErrorsIgnorePattern: '^_',
+          },
+        ],
         '@typescript-eslint/indent': 'off',
         '@typescript-eslint/no-use-before-define': 'off',
         'import/no-extraneous-dependencies': [

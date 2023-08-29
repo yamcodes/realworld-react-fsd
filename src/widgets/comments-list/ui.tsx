@@ -1,5 +1,6 @@
 import { useList, useUnit } from 'effector-react';
 import { CommentCard } from '~entities/comment';
+import { $$sessionModel } from '~entities/session';
 import { DeleteComment } from '~features/comment';
 import { ErrorHandler } from '~shared/ui/error-handler';
 import { Spinner } from '~shared/ui/spinner';
@@ -15,15 +16,20 @@ export function CommentsList(props: CommentsListProps) {
   const { pending, error } = useUnit($$model.commentsQuery);
   const articleSlug = useUnit($$model.$slug);
 
+  const visitor = useUnit($$sessionModel.$visitor);
+
   const commentsList = useList($$model.commentsQuery.$data, (comment) => (
     <CommentCard
       comment={comment}
       actions={
-        <DeleteComment
-          $$model={$$model.$$deleteComment}
-          id={comment.id}
-          slug={articleSlug!}
-        />
+        visitor &&
+        visitor.username === comment.author.username && (
+          <DeleteComment
+            $$model={$$model.$$deleteComment}
+            id={comment.id}
+            slug={articleSlug!}
+          />
+        )
       }
     />
   ));
